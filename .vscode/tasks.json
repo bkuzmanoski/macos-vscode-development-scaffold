@@ -4,7 +4,7 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "xcodebuild -scheme ${config:appName} -configuration Debug -derivedDataPath ${workspaceFolder}/DerivedData",
+      "command": "xcodebuild -scheme ${config:appName} -configuration Debug -derivedDataPath ${workspaceFolder}/DerivedData -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle\"",
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$swiftc"],
       "presentation": {
