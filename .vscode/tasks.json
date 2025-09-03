@@ -1,0 +1,96 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "xcodebuild -scheme ${config:appName} -configuration Debug -derivedDataPath ${workspaceFolder}/DerivedData",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$swiftc"],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "panel": "dedicated",
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Debug Log",
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/log_formatter.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "panel": "dedicated",
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Delete Debug Log",
+      "type": "shell",
+      "command": "rm -rf ${workspaceFolder}/.logs/debug.log",
+      "group": { "kind": "none" },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Delete Derived Data",
+      "type": "shell",
+      "command": "rm -rf ${workspaceFolder}/DerivedData",
+      "group": { "kind": "none" },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Reset Permissions",
+      "type": "shell",
+      "command": "tccutil reset All ${config:bundleID}",
+      "group": { "kind": "none" },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Reset Defaults",
+      "type": "shell",
+      "command": "defaults delete ${config:bundleID}",
+      "group": { "kind": "none" },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "Release",
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/release.sh",
+      "group": { "kind": "none" },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "close": false
+      }
+    }
+  ]
+}

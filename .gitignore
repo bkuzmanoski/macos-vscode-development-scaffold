@@ -1,0 +1,5 @@
+.DS_Store
+.logs
+*.xcuserdatad/
+DerivedData/
+Releases/Temp
