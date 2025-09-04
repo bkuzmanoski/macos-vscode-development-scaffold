@@ -4,7 +4,7 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "xcodebuild -scheme ${config:appName} -configuration Debug -derivedDataPath ${workspaceFolder}/DerivedData -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle\"",
+      "command": "rm -rf \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\"; xcodebuild build -scheme ${config:appName} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\" | xcbeautify  --disable-logging",
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$swiftc"],
       "presentation": {
