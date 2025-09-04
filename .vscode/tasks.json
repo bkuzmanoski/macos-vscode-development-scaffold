@@ -11,6 +11,7 @@
         "echo": false,
         "showReuseMessage": false,
         "panel": "dedicated",
+        "reveal": "silent",
         "close": true
       }
     },
