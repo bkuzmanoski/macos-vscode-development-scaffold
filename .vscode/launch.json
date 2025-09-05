@@ -4,35 +4,9 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug (Log to File)",
-      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
-      "stdio": [
-        null,
-        "${workspaceFolder}/.logs/debug.log",
-        "${workspaceFolder}/.logs/debug.log"
-      ],
-      "postDebugTask": "Delete Debug Log",
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Build and Debug (Log to File)",
-      "preLaunchTask": "Build",
-      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
-      "stdio": [
-        null,
-        "${workspaceFolder}/.logs/debug.log",
-        "${workspaceFolder}/.logs/debug.log"
-      ],
-      "postDebugTask": "Delete Debug Log",
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Debug",
       "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
+      "terminal": "console",
       "internalConsoleOptions": "neverOpen"
     },
     {
@@ -41,6 +15,7 @@
       "name": "Build and Debug",
       "preLaunchTask": "Build",
       "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
+      "terminal": "console",
       "internalConsoleOptions": "neverOpen"
     }
   ]

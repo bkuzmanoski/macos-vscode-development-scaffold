@@ -12,8 +12,8 @@ readonly RELEASE_OPTIONS=("${INTERNAL}" "${PRODUCTION}")
 readonly OUTPUT_PADDING="           "
 
 # Paths
-readonly INITIAL_DIR="$(pwd)"
-readonly PROJECT_DIR="${0:A:h}/.."
+readonly SCRIPT_DIR="${0:A:h}"
+readonly PROJECT_DIR="${SCRIPT_DIR}/.."
 readonly RELEASES_DIR="${PROJECT_DIR}/Releases"
 readonly ASSETS_DIR="${RELEASES_DIR}/Assets"
 readonly TEMP_DIR="${RELEASES_DIR}/Temp"
@@ -390,4 +390,4 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
   log_info "GitHub release (draft): ${GH_RELEASE_BASE_URL}"
 fi
 
-cd "${INITIAL_DIR}"
+cd "${release_dir}"

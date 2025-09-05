@@ -8,37 +8,21 @@
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$swiftc"],
       "presentation": {
-        "echo": false,
-        "showReuseMessage": false,
         "panel": "dedicated",
-        "reveal": "silent",
-        "close": true
+        "echo": false,
+        "showReuseMessage": false
       }
     },
     {
-      "label": "Debug Log",
+      "label": "Log Stream",
       "type": "shell",
-      "command": "${workspaceFolder}/Scripts/log_formatter.sh",
+      "command": "${workspaceFolder}/scripts/log_formatter.sh ${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName} ${config:bundleID}",
+      "isBackground": true,
       "problemMatcher": [],
       "presentation": {
-        "echo": false,
-        "showReuseMessage": false,
         "panel": "dedicated",
-        "reveal": "silent",
-        "close": true
-      }
-    },
-    {
-      "label": "Delete Debug Log",
-      "type": "shell",
-      "command": "rm -rf ${workspaceFolder}/.logs/debug.log",
-      "group": { "kind": "none" },
-      "problemMatcher": [],
-      "presentation": {
         "echo": false,
-        "showReuseMessage": false,
-        "reveal": "silent",
-        "close": true
+        "showReuseMessage": false
       }
     },
     {
@@ -49,8 +33,6 @@
       "problemMatcher": [],
       "presentation": {
         "echo": false,
-        "showReuseMessage": false,
-        "reveal": "silent",
         "close": true
       }
     },
@@ -62,8 +44,6 @@
       "problemMatcher": [],
       "presentation": {
         "echo": false,
-        "showReuseMessage": false,
-        "reveal": "silent",
         "close": true
       }
     },
@@ -75,8 +55,6 @@
       "problemMatcher": [],
       "presentation": {
         "echo": false,
-        "showReuseMessage": false,
-        "reveal": "silent",
         "close": true
       }
     },
@@ -86,11 +64,7 @@
       "command": "${workspaceFolder}/Scripts/release.sh",
       "group": { "kind": "none" },
       "problemMatcher": [],
-      "presentation": {
-        "echo": false,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "echo": false, "showReuseMessage": false }
     }
   ]
 }

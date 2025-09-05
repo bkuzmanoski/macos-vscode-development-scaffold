@@ -1,44 +1,41 @@
 #!/bin/zsh
 
-readonly LOG_DIR="${0:A:h}/../.logs"
-readonly LOG_PATH="${LOG_DIR}/debug.log"
-readonly BOLD=$'\033[1m'
-readonly RESET=$'\033[0m'
+if (( # < 2 )); then
+  print -u2 "Error: Missing arguments."
+  print -u2 "Usage: $0 \"<process_path>\" \"<primary_subsystem>\""
+  exit 1
+fi
 
-mkdir -p "${LOG_DIR}"
-print "Log formatter started...\n"
-tail -F "${LOG_PATH}" | awk -v bold="${BOLD}" -v reset="${RESET}" '
-/^[0-9]{4}-[0-9]{2}-[0-9]{2}/ {
-  original_line               = $0
-  date_part               = $1 # YYYY-MM-DD
-  time_fraction_timezone  = $2 # HH:MM:SS.microseconds+TZ
-  process_token           = $3 # ProcessName[pid:thread]
+readonly PROCESS_PATH="$1"
+readonly PRIMARY_SUBSYSTEM="$2"
+readonly PREDICATE="processImagePath == \"${PROCESS_PATH}\" AND (subsystem == \"${PRIMARY_SUBSYSTEM}\" OR messageType != 0)"
 
-  split(time_fraction_timezone, time_parts, ".")
-  time_hms = time_parts[1]
-  end_of_process_token_pos = index(original_line, "] ")
+command log stream --predicate "${PREDICATE}" --style ndjson | {
+  read -r header
+  jq -r --unbuffered --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" '
+    (
+      def colors: { "red": "\u001b[31m", "yellow": "\u001b[33m" };
+      def bold:   "\u001b[1m";
+      def reset:  "\u001b[0m";
 
-  if (end_of_process_token_pos == 0) next
+      (.timestamp | split(" ")[1] | split(".")[0]) as $time |
+      (
+        if .messageType == "Fault" then colors.red
+        elif .messageType == "Error" then colors.yellow
+        elif .messageType == "Warning" then colors.yellow
+        else ""
+        end
+      ) as $color |
+      (
+        if .subsystem and .subsystem != $primary_subsystem then
+          " (\(.subsystem))"
+        else
+          ""
+        end
+      ) as $subsystem_str |
 
-  remaining_text = substr(original_line, end_of_process_token_pos + 2) # Pattern: [Category] rest-of-message
-
-  category = ""
-  message  = remaining_text
-
-  if (substr(remaining_text, 1, 1) == "[") {
-    closing_bracket_pos = index(remaining_text, "]")
-
-    if (closing_bracket_pos > 0) {
-      category = substr(remaining_text, 2, closing_bracket_pos - 2)
-      message  = substr(remaining_text, closing_bracket_pos + 1)
-      sub(/^[ \t]+/, "", message)
-    }
-  }
-
-  printf("%s %s‣ %s%s\n%s\n\n", time_hms, bold, category, reset, message)
-  next
+      $time + bold + " ‣ " + $color + .category + $subsystem_str + reset + "\n" +
+      .eventMessage + "\n"
+    )
+  '
 }
-{
-  print
-}
-'
