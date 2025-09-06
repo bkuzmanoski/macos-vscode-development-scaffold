@@ -340,7 +340,7 @@ run_command "Zipping notarized app bundle" ditto -c -k --sequesterRsrc --keepPar
 # -----------------------------------------------------------------------------
 log_stage "Uploading debug symbols to Sentry"
 
-run_command "Uploading dSYMs" sentry-cli debug-files upload \
+run_command "Uploading dSYMs" sentry-cli debug-files upload -include-sources \
   --auth-token "${sentry_auth_token}" \
   --org "${SENTRY_ORG}" \
   --project "${SENTRY_PROJECT}" \
