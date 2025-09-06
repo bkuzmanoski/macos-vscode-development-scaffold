@@ -10,8 +10,7 @@
       "presentation": {
         "panel": "dedicated",
         "echo": false,
-        "showReuseMessage": false,
-        "revealProblems": "onProblem"
+        "showReuseMessage": false
       }
     },
     {
