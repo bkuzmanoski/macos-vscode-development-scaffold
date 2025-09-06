@@ -4,9 +4,8 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "rm -rf \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\"; xcodebuild build -scheme ${config:appName} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\" | xcbeautify  --disable-logging",
+      "command": "set -o pipefail; rm -rf \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\"; xcodebuild build -scheme ${config:appName} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\" | xcbeautify  --disable-logging",
       "group": { "kind": "build", "isDefault": true },
-      "problemMatcher": ["$swiftc"],
       "presentation": {
         "panel": "dedicated",
         "echo": false,
@@ -18,9 +17,9 @@
       "type": "shell",
       "command": "${workspaceFolder}/scripts/log_formatter.sh ${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName} ${config:bundleID}",
       "isBackground": true,
-      "problemMatcher": [],
       "presentation": {
         "panel": "dedicated",
+        "reveal": "silent",
         "echo": false,
         "showReuseMessage": false
       }
@@ -30,40 +29,27 @@
       "type": "shell",
       "command": "rm -rf ${workspaceFolder}/DerivedData",
       "group": { "kind": "none" },
-      "problemMatcher": [],
-      "presentation": {
-        "echo": false,
-        "close": true
-      }
+      "presentation": { "close": true }
     },
     {
       "label": "Reset Permissions",
       "type": "shell",
       "command": "tccutil reset All ${config:bundleID}",
       "group": { "kind": "none" },
-      "problemMatcher": [],
-      "presentation": {
-        "echo": false,
-        "close": true
-      }
+      "presentation": { "close": true }
     },
     {
       "label": "Reset Defaults",
       "type": "shell",
       "command": "defaults delete ${config:bundleID}",
       "group": { "kind": "none" },
-      "problemMatcher": [],
-      "presentation": {
-        "echo": false,
-        "close": true
-      }
+      "presentation": { "close": true }
     },
     {
       "label": "Release",
       "type": "shell",
       "command": "${workspaceFolder}/Scripts/release.sh",
       "group": { "kind": "none" },
-      "problemMatcher": [],
       "presentation": { "echo": false, "showReuseMessage": false }
     }
   ]
