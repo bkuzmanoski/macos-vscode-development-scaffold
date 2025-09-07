@@ -37,7 +37,7 @@
       }
     },
     {
-      "label": "Log Stream",
+      "label": "Stream Log",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/log_formatter.sh ${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName} ${config:bundleID}",
       "problemMatcher": [],
