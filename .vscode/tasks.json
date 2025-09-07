@@ -4,7 +4,31 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "set -o pipefail; rm -rf \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\"; xcodebuild build -scheme ${config:appName} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/ResultBundle.xcresult\" | xcbeautify  --disable-logging",
+      "command": "set -o pipefail; rm -rf \"${workspaceFolder}/DerivedData/${config:scheme}.xcresult\"; xcodebuild build -scheme ${config:scheme} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/${config:scheme}.xcresult\" | xcbeautify  --disable-logging",
+      "problemMatcher": [
+        {
+          "fileLocation": ["absolute"],
+          "pattern": {
+            "regexp": "^(?:❌|\\[x\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          "severity": "error"
+        },
+        {
+          "fileLocation": ["absolute"],
+          "pattern": {
+            "regexp": "^(?:⚠️|\\[!\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          "severity": "warning"
+        }
+      ],
       "group": { "kind": "build", "isDefault": true },
       "presentation": {
         "panel": "dedicated",
@@ -16,10 +40,10 @@
       "label": "Log Stream",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/log_formatter.sh ${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName} ${config:bundleID}",
+      "problemMatcher": [],
       "isBackground": true,
       "presentation": {
         "panel": "dedicated",
-        "reveal": "silent",
         "echo": false,
         "showReuseMessage": false
       }
@@ -28,28 +52,28 @@
       "label": "Delete Derived Data",
       "type": "shell",
       "command": "rm -rf ${workspaceFolder}/DerivedData",
-      "group": { "kind": "none" },
+      "problemMatcher": [],
       "presentation": { "close": true }
     },
     {
       "label": "Reset Permissions",
       "type": "shell",
       "command": "tccutil reset All ${config:bundleID}",
-      "group": { "kind": "none" },
+      "problemMatcher": [],
       "presentation": { "close": true }
     },
     {
       "label": "Reset Defaults",
       "type": "shell",
       "command": "defaults delete ${config:bundleID}",
-      "group": { "kind": "none" },
+      "problemMatcher": [],
       "presentation": { "close": true }
     },
     {
       "label": "Release",
       "type": "shell",
       "command": "${workspaceFolder}/Scripts/release.sh",
-      "group": { "kind": "none" },
+      "problemMatcher": [],
       "presentation": { "echo": false, "showReuseMessage": false }
     }
   ]

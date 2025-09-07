@@ -1,5 +1,6 @@
 {
   "appName": "AppName", // TODO: Replace with app name
+  "scheme": "AppName", // TODO: Replace with the app's scheme name
   "bundleID": "com.example.AppName", // TODO: Replace with the app's bundle identifier
   "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
   "[swift]": {
