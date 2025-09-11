@@ -269,11 +269,19 @@ run_command "Exporting app bundle" xcodebuild -exportArchive \
   -exportPath "${staging_dir}" \
   -exportOptionsPlist "${export_options_plist_path}"
 
+if [[ "${release_type}" == "${INTERNAL}" ]]; then
+  readonly app_filename="${product_name} ${version_string}.app"
+  readonly app_path="${staging_dir}/${app_filename}"
+
+  run_command "Renaming app bundle for internal release" mv "${staging_dir}/${product_name}.app" "${app_path}"
+else
+  readonly app_filename="${product_name}.app"
+  readonly app_path="${staging_dir}/${app_filename}"
+fi
+
 # -----------------------------------------------------------------------------
 log_stage "Notarizing app bundle"
 
-readonly app_filename="${product_name}.app"
-readonly app_path="${staging_dir}/${app_filename}"
 readonly temp_zip_path="${TEMP_DIR}/${product_name}.zip"
 
 run_command "Zipping app bundle for notarization" ditto -c -k --sequesterRsrc --keepParent "${app_path}" "${temp_zip_path}"
