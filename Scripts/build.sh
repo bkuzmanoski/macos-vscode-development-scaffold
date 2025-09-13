@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Constants
-readonly BUILD_SCHEME="Traction"
+readonly BUILD_SCHEME="" # TODO: Update
 readonly CONFIGURATION="Debug"
 readonly DESTINATION="platform=macOS,arch=arm64"
 
