@@ -1,6 +1,10 @@
 {
   "appName": "AppName", // TODO: Replace with app name
   "bundleID": "com.example.AppName", // TODO: Replace with the app's bundle identifier
+  "files.watcherExclude": {
+    "**/DerivedData": true,
+    "**/Releases": true
+  },
   "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
   "[swift]": {
     "editor.defaultFormatter": "swiftlang.swift-vscode"
