@@ -9,6 +9,13 @@ This repository contains my personal scaffold for developing macOS applications.
 - Automated release script (publishes to GitHub Releases, uploads dSYMs to Sentry, etc.)
 - And some other things...
 
+## Required Tools
+
+- [xcode-build-server](https://github.com/SolaWing/xcode-build-server)
+- [xcbeautify](https://github.com/cpisciotta/xcbeautify)
+- [create-dmg](https://github.com/create-dmg/create-dmg) (used in `/Scripts/release.sh`)
+- [sentry-cli](https://github.com/getsentry/sentry-cli) (used in `/Scripts/release.sh`)
+
 ## Required VSCode Extensions
 
 - [Swift](https://marketplace.visualstudio.com/items?itemName=swiftlang.swift-vscode)
