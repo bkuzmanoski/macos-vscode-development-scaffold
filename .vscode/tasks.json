@@ -34,8 +34,8 @@
           "pattern": { "regexp": "", "line": 1 },
           "background": {
             "activeOnStart": true,
-            "beginsPattern": "^Resolving Package Graph",
-            "endsPattern": "^(Build Succeeded|\\*\\* BUILD FAILED \\*\\*|\\*\\* BUILD INTERRUPTED \\*\\*)$"
+            "beginsPattern": "^Resolving Package Graph$",
+            "endsPattern": "^(xcbeautify could not be found.|Build Succeeded|\\*\\* BUILD FAILED \\*\\*|\\*\\* BUILD INTERRUPTED \\*\\*)$"
           }
         },
         {
