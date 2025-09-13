@@ -16,14 +16,7 @@
       "presentation": { "close": true }
     },
     {
-      "type": "shell",
       "label": "Build",
-      "dependsOrder": "sequence",
-      "dependsOn": ["Run Build Script", "Restart Swift LSP Server"],
-      "group": { "kind": "build", "isDefault": true }
-    },
-    {
-      "label": "Run Build Script",
       "type": "shell",
       "command": "${workspaceFolder}/Scripts/build.sh",
       "problemMatcher": [
@@ -63,15 +56,12 @@
           "severity": "warning"
         }
       ],
+      "group": { "kind": "build", "isDefault": true },
       "presentation": {
         "panel": "dedicated",
         "echo": false,
         "showReuseMessage": false
       }
-    },
-    {
-      "label": "Restart Swift LSP Server",
-      "command": "${command:swift.restartLSPServer}"
     },
     {
       "label": "Stream Log",
