@@ -1,6 +1,6 @@
 # macOS App Development using VSCode
 
-This repository contains my personal scaffold for developing macOS applications. It uses an Xcode project for building the app, but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used (Sentry, Sparkle, etc.), etc., so it may not be suitable for your needs.
+This repository contains my personal scaffold for developing macOS applications. It uses an Xcode project but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used (Sentry, Sparkle, GitHub Releases, etc.), etc., so it may not be suitable for your needs.
 
 ## Features
 
@@ -11,10 +11,14 @@ This repository contains my personal scaffold for developing macOS applications.
 
 ## Required Tools
 
+- Xcode (`xcodebuild`, `xcrun`, etc.)
 - [xcode-build-server](https://github.com/SolaWing/xcode-build-server)
 - [xcbeautify](https://github.com/cpisciotta/xcbeautify)
+- [op](https://developer.1password.com/docs/cli/) (used in `/Scripts/release.sh`)
+- [jq](https://github.com/jqlang/jq) (used in `/Scripts/release.sh`)
 - [create-dmg](https://github.com/create-dmg/create-dmg) (used in `/Scripts/release.sh`)
 - [sentry-cli](https://github.com/getsentry/sentry-cli) (used in `/Scripts/release.sh`)
+- [gh](https://cli.github.com/) (used in `/Scripts/release.sh`)
 
 ## Required VSCode Extensions
 
