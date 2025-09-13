@@ -2,11 +2,44 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build",
+      "label": "Disable Apple Developer Services Domain",
       "type": "shell",
-      "command": "set -o pipefail; rm -rf \"${workspaceFolder}/DerivedData/${config:scheme}.xcresult\"; xcodebuild build -scheme ${config:scheme} -configuration Debug -destination \"platform=macOS,arch=arm64\" -derivedDataPath \"${workspaceFolder}/DerivedData\" -resultBundlePath \"${workspaceFolder}/DerivedData/${config:scheme}.xcresult\" | xcbeautify  --disable-logging",
+      "command": "print \"127.0.0.1 http://developerservices2.apple.com\" | sudo tee -a /etc/hosts > /dev/null",
+      "problemMatcher": [],
+      "presentation": { "close": true }
+    },
+    {
+      "label": "Enable Apple Developer Services Domain",
+      "type": "shell",
+      "command": "sudo sed -i '' '/developerservices2.apple.com/d' /etc/hosts",
+      "problemMatcher": [],
+      "presentation": { "close": true }
+    },
+    {
+      "type": "shell",
+      "label": "Build",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Run Build Script", "Restart Swift LSP Server"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Run Build Script",
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/build.sh",
       "problemMatcher": [
         {
+          "owner": "swift",
+          "fileLocation": ["relative", "${workspaceRoot}"],
+          "applyTo": "allDocuments",
+          "pattern": { "regexp": "", "line": 1 },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^Resolving Package Graph",
+            "endsPattern": "^(Build Succeeded|\\*\\* BUILD FAILED \\*\\*|\\*\\* BUILD INTERRUPTED \\*\\*)$"
+          }
+        },
+        {
+          "owner": "swift",
           "fileLocation": ["absolute"],
           "pattern": {
             "regexp": "^(?:❌|\\[x\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
@@ -18,6 +51,7 @@
           "severity": "error"
         },
         {
+          "owner": "swift",
           "fileLocation": ["absolute"],
           "pattern": {
             "regexp": "^(?:⚠️|\\[!\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
@@ -29,12 +63,15 @@
           "severity": "warning"
         }
       ],
-      "group": { "kind": "build", "isDefault": true },
       "presentation": {
         "panel": "dedicated",
         "echo": false,
         "showReuseMessage": false
       }
+    },
+    {
+      "label": "Restart Swift LSP Server",
+      "command": "${command:swift.restartLSPServer}"
     },
     {
       "label": "Stream Log",
