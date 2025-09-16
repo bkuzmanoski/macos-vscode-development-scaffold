@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+# =============================================================================
+# Configuration
+# =============================================================================
+
 # Constants
 readonly BUILD_SCHEME="" # TODO: Update
 readonly CONFIGURATION="Debug"
@@ -9,19 +13,37 @@ readonly DESTINATION="platform=macOS,arch=arm64"
 readonly SCRIPT_DIR="${0:A:h}"
 readonly PROJECT_DIR="${SCRIPT_DIR}/.."
 readonly DERIVED_DATA_DIR="${PROJECT_DIR}/DerivedData"
-readonly RESULT_BUNDLE_PATH="${DERIVED_DATA_DIR}/${BUILD_SCHEME}.xcresult"
+readonly BUILD_LOG_PATH="${DERIVED_DATA_DIR}/xcodebuild.log"
 
-if ! command -v xcbeautify &> /dev/null; then
-    print "xcbeautify could not be found."
+# Dependencies
+readonly REQUIRED_COMMANDS=("xcodebuild" "xcbeautify" "xcode-build-server")
+
+# =============================================================================
+# Build Script
+# =============================================================================
+
+for command in "${REQUIRED_COMMANDS[@]}"; do
+  if ! command -v "${command}" &>/dev/null; then
+    print "${command} could not be found."
     exit 1
-fi
+  fi
+done
+
+update_compilation_flags() {
+  cd "${PROJECT_DIR}"
+  xcode-build-server parse -a "${BUILD_LOG_PATH}"
+}
+
+trap 'update_compilation_flags' EXIT
+
+mkdir -p "${BUILD_LOG_PATH:A:h}"
+[ -f "${BUILD_LOG_PATH}" ] && rm -rf "${BUILD_LOG_PATH}"
 
 set -o pipefail
-rm -rf "${PROJECT_DIR}/DerivedData/${BUILD_SCHEME}.xcresult"
 xcodebuild build \
   -scheme ${BUILD_SCHEME} \
   -configuration "${CONFIGURATION}" \
   -destination "${DESTINATION}" \
   -derivedDataPath "${DERIVED_DATA_DIR}" \
-  -resultBundlePath "${RESULT_BUNDLE_PATH}" \
+  | tee "${BUILD_LOG_PATH}" \
   | xcbeautify --disable-logging

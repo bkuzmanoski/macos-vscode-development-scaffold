@@ -28,7 +28,7 @@
           "background": {
             "activeOnStart": true,
             "beginsPattern": "^Resolving Package Graph$",
-            "endsPattern": "^(xcbeautify could not be found.|Build Succeeded|\\*\\* BUILD FAILED \\*\\*|\\*\\* BUILD INTERRUPTED \\*\\*)$"
+            "endsPattern": "^Build Succeeded$"
           }
         },
         {

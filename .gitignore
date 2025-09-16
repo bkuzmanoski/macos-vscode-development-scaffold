@@ -1,4 +1,6 @@
+.compile
 .DS_Store
+buildServer.json
 *.xcuserdatad/
 DerivedData/
 Releases/Temp
