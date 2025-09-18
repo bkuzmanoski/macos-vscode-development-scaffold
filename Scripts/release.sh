@@ -372,18 +372,19 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
   if gh release view "${tag_name}" &>/dev/null; then
     log_warning "GitHub release ${tag_name} already exists, skipping creation"
   else
-    run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title-string "Release ${version}" --latest --draft "${dmg_path}" "${appcast_path}"
+    run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title "Release ${version}" --latest --draft "${dmg_path}" "${appcast_path}"
   fi
 fi
 
 # -----------------------------------------------------------------------------
 log_stage "Finalizing release"
 
+cd "${PROJECT_DIR}"
+
 if [[ -f "${PRODUCTION_ICON_BACKUP_PATH}" ]]; then
   run_command "Restoring original app icon" mv "${PRODUCTION_ICON_BACKUP_PATH}" "${PRODUCTION_ICON_PATH}"
 fi
 
-cd "${PROJECT_DIR}"
 run_command "Incrementing project build number" xcrun agvtool next-version
 
 log_info "Cleaning up temporary files"
