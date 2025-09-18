@@ -185,7 +185,7 @@ readonly sparkle_eddsa_private_key=${secrets[${OP_SPARKLE_EDDSA_PRIVATE_KEY_REF}
 readonly sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
 
 # -----------------------------------------------------------------------------
-log_stage "Reading build settings from XCode"
+log_stage "Reading build settings from Xcode"
 
 typeset -A build_settings
 build_settings_lines=("${(f)"$( \
@@ -225,7 +225,7 @@ log_stage "Starting release process"
 
 log_info "Development team: ${DEVELOPMENT_TEAM}"
 log_info "Signing identity: ${SIGNING_IDENTITY}"
-log_info "XCode project: ${XCODE_PROJECT_PATH}"
+log_info "Xcode project: ${XCODE_PROJECT_PATH}"
 log_info "Build scheme: ${BUILD_SCHEME}"
 log_info "Build configuration: ${BUILD_CONFIGURATION}"
 log_info "Sentry organization: ${SENTRY_ORG}"
