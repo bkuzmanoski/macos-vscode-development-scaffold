@@ -367,12 +367,12 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
   else
     run_command "Creating tag" git tag -a "${tag_name}" -m "Release version ${version_string}"
     run_command "Pushing tag to remote" git push origin "${tag_name}"
-  fi
 
-  if gh release view "${tag_name}" &>/dev/null; then
-    log_warning "GitHub release ${tag_name} already exists, skipping creation"
-  else
-    run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title "Release ${version}" --latest --draft "${dmg_path}" "${appcast_path}"
+    if gh release view "${tag_name}" &>/dev/null; then
+      log_warning "GitHub release ${tag_name} already exists, skipping creation"
+    else
+      run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title "Release ${version}" --latest --draft "${dmg_path}" "${appcast_path}"
+    fi
   fi
 fi
 
