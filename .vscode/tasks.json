@@ -2,20 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Disable Apple Developer Services Domain",
-      "type": "shell",
-      "command": "print \"127.0.0.1 http://developerservices2.apple.com\" | sudo tee -a /etc/hosts > /dev/null",
-      "problemMatcher": [],
-      "presentation": { "close": true }
-    },
-    {
-      "label": "Enable Apple Developer Services Domain",
-      "type": "shell",
-      "command": "sudo sed -i '' '/developerservices2.apple.com/d' /etc/hosts",
-      "problemMatcher": [],
-      "presentation": { "close": true }
-    },
-    {
       "label": "Build",
       "type": "shell",
       "command": "${workspaceFolder}/Scripts/build.sh",
