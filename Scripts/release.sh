@@ -336,7 +336,7 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
 		    <sparkle:minimumSystemVersion>${minimum_system_version}</sparkle:minimumSystemVersion>
 		    <enclosure url="${sparkle_root_url}/${dmg_filename}" ${eddsa_signature_fragment}/>
 		    <sparkle:criticalUpdate/>
-  	  </item>
+		  </item>
 		</channel>
 		</rss>
 		EOF
