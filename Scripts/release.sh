@@ -250,18 +250,18 @@ run_command "Archiving application" xcodebuild archive \
   -archivePath "${temp_archive_path}"
 
 log_info "Creating \"ExportOptions.plist\""
-command cat > "${export_options_plist_path}" << EOL
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-<key>method</key>
-<string>developer-id</string>
-<key>signingStyle</key>
-<string>automatic</string>
-</dict>
-</plist>
-EOL
+command cat > "${export_options_plist_path}" <<- EOF
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+	<plist version="1.0">
+	<dict>
+	<key>method</key>
+	<string>developer-id</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	</dict>
+	</plist>
+	EOF
 
 run_command "Creating staging directory" mkdir -p "${staging_dir}"
 run_command "Exporting app bundle" xcodebuild -exportArchive \
@@ -323,23 +323,23 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
   [[ $? -ne 0 || -z "${eddsa_signature_fragment}" ]] && log_error "Failed to generate the Sparkle EdDSA Signature."
 
   log_info "Generating appcast.xml"
-  command cat > "${appcast_path}" << EOL
-<?xml version="1.0" standalone="yes"?>
-<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-<channel>
-  <title>${product_name}</title>
-  <item>
-    <title>${version}</title>
-    <pubDate>$(date -u +"%a, %d %b %Y %H:%M:%S %z")</pubDate>
-    <sparkle:version>${build_number}</sparkle:version>
-    <sparkle:shortVersionString>${version}</sparkle:shortVersionString>
-    <sparkle:minimumSystemVersion>${minimum_system_version}</sparkle:minimumSystemVersion>
-    <enclosure url="${sparkle_root_url}/${dmg_filename}" ${eddsa_signature_fragment}/>
-    <sparkle:criticalUpdate/>
-  </item>
-</channel>
-</rss>
-EOL
+  command cat > "${appcast_path}" <<- EOF
+		<?xml version="1.0" standalone="yes"?>
+		<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+		<channel>
+		  <title>${product_name}</title>
+		  <item>
+		    <title>${version}</title>
+		    <pubDate>$(date -u +"%a, %d %b %Y %H:%M:%S %z")</pubDate>
+		    <sparkle:version>${build_number}</sparkle:version>
+		    <sparkle:shortVersionString>${version}</sparkle:shortVersionString>
+		    <sparkle:minimumSystemVersion>${minimum_system_version}</sparkle:minimumSystemVersion>
+		    <enclosure url="${sparkle_root_url}/${dmg_filename}" ${eddsa_signature_fragment}/>
+		    <sparkle:criticalUpdate/>
+  	  </item>
+		</channel>
+		</rss>
+		EOF
 fi
 
 run_command "Zipping app archive" ditto -c -k --sequesterRsrc --keepParent "${temp_archive_path}" "${archive_zip_path}"
