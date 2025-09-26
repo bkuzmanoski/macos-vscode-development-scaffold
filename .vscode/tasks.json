@@ -7,7 +7,6 @@
       "command": "${workspaceFolder}/Scripts/build.sh",
       "problemMatcher": [
         {
-          "owner": "swift",
           "fileLocation": ["relative", "${workspaceRoot}"],
           "applyTo": "allDocuments",
           "pattern": { "regexp": "", "line": 1 },
@@ -52,7 +51,7 @@
     {
       "label": "Stream Log",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/log_formatter.sh ${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName} ${config:bundleID}",
+      "command": "${workspaceFolder}/scripts/log_formatter.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleID}\"",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
