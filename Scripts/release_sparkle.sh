@@ -25,6 +25,7 @@ readonly COMMAND_OUTPUT_PATH="${TEMP_DIR}/command_output.log"
 # 1Password Secrets References
 readonly OP_APPLE_ID_REF="op://path/to/secret" # TODO: Update
 readonly OP_NOTARYTOOL_PASSWORD_REF="op://path/to/secret" # TODO:  Update
+readonly OP_SPARKLE_EDDSA_PRIVATE_KEY_REF="op://path/to/secret" # TODO:  Update
 readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret" # TODO:  Update
 
 # Project Settings
@@ -60,8 +61,8 @@ readonly DMG_APP_DROP_LINK_POS_Y=274
 readonly REQUIRED_COMMANDS=("op" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
 readonly REQUIRED_XCODE_TOOLS=("agvtool" "notarytool" "stapler")
 readonly REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${INTERNAL_ICON_PATH}" "${PRODUCTION_ICON_PATH}" "${DMG_BACKGROUND_PATH}")
-readonly REQUIRED_SECRETS=( "${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
-readonly REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MARKETING_VERSION" "CURRENT_PROJECT_VERSION" "BUILD_DIR" "MACOSX_DEPLOYMENT_TARGET")
+readonly REQUIRED_SECRETS=( "${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SPARKLE_EDDSA_PRIVATE_KEY_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
+readonly REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MARKETING_VERSION" "CURRENT_PROJECT_VERSION" "BUILD_DIR" "MACOSX_DEPLOYMENT_TARGET" "SPARKLE_ROOT_URL")
 
 # =============================================================================
 # Utility Functions
@@ -181,6 +182,7 @@ done
 
 readonly apple_id=${secrets[${OP_APPLE_ID_REF}]}
 readonly notarytool_password=${secrets[${OP_NOTARYTOOL_PASSWORD_REF}]}
+readonly sparkle_eddsa_private_key=${secrets[${OP_SPARKLE_EDDSA_PRIVATE_KEY_REF}]}
 readonly sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
 
 # -----------------------------------------------------------------------------
@@ -207,6 +209,7 @@ readonly version=${build_settings[MARKETING_VERSION]}
 readonly build_number=${build_settings[CURRENT_PROJECT_VERSION]}
 readonly minimum_system_version=${build_settings[MACOSX_DEPLOYMENT_TARGET]}
 readonly build_dir=${build_settings[BUILD_DIR]}
+readonly sparkle_root_url=${build_settings[SPARKLE_ROOT_URL]}
 
 # -----------------------------------------------------------------------------
 log_stage "Creating working directories"
@@ -297,7 +300,9 @@ readonly archive_zip_path="${release_dir}/${product_name}.xcarchive.zip"
 readonly notarized_bundle_zip_path="${release_dir}/${product_name} ${version_string}.zip"
 
 if [[ "${release_type}" == "${PRODUCTION}" ]]; then
+  readonly sparkle_sign_update_bin="${build_dir}/../../${product_name}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
   readonly dmg_path="${release_dir}/${DMG_FILENAME}"
+  readonly appcast_path="${release_dir}/appcast.xml"
 
   run_command "Creating DMG" create-dmg \
     --volname "${product_name}" \
@@ -311,6 +316,30 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
     "${dmg_path}" \
     "${staging_dir}"
   run_command "Signing DMG with Developer ID" codesign --sign "${SIGNING_IDENTITY}" "${dmg_path}"
+
+  log_info "Generating Sparkle EdDSA Signature"
+  command -v "${sparkle_sign_update_bin}" &>/dev/null || log_error "Could not find \`sign_update\` binary at: $(dirname "${sparkle_sign_update_bin}")"
+  eddsa_signature_fragment=$(print "${sparkle_eddsa_private_key}" | "${sparkle_sign_update_bin}" --ed-key-file - "${dmg_path}")
+  [[ $? -ne 0 || -z "${eddsa_signature_fragment}" ]] && log_error "Failed to generate the Sparkle EdDSA Signature."
+
+  log_info "Generating appcast.xml"
+  command cat > "${appcast_path}" <<- EOF
+		<?xml version="1.0" standalone="yes"?>
+		<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+		<channel>
+		  <title>${product_name}</title>
+		  <item>
+		    <title>${version}</title>
+		    <pubDate>$(date -u +"%a, %d %b %Y %H:%M:%S %z")</pubDate>
+		    <sparkle:version>${build_number}</sparkle:version>
+		    <sparkle:shortVersionString>${version}</sparkle:shortVersionString>
+		    <sparkle:minimumSystemVersion>${minimum_system_version}</sparkle:minimumSystemVersion>
+		    <enclosure url="${sparkle_root_url}/${DMG_FILENAME}" ${eddsa_signature_fragment}/>
+		    <sparkle:criticalUpdate/>
+		  </item>
+		</channel>
+		</rss>
+		EOF
 fi
 
 run_command "Zipping app archive" ditto -c -k --sequesterRsrc --keepParent "${temp_archive_path}" "${archive_zip_path}"
@@ -342,7 +371,7 @@ if [[ "${release_type}" == "${PRODUCTION}" ]]; then
     if gh release view "${tag_name}" &>/dev/null; then
       log_warning "GitHub release ${tag_name} already exists, skipping creation"
     else
-      run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title "Release ${version}" --latest --draft "${dmg_path}" "${notarized_bundle_zip_path}"
+      run_command "Creating release and uploading artefacts" gh release create "${tag_name}" --title "Release ${version}" --latest --draft "${dmg_path}" "${appcast_path}"
     fi
   fi
 fi
