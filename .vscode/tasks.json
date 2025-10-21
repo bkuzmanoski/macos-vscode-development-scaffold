@@ -43,9 +43,10 @@
       ],
       "group": { "kind": "build", "isDefault": true },
       "presentation": {
-        "panel": "dedicated",
         "echo": false,
-        "showReuseMessage": false
+        "showReuseMessage": false,
+        "panel": "dedicated",
+        "revealProblems": "onProblem"
       }
     },
     {
