@@ -180,11 +180,6 @@ while true; do
 done
 
 # -----------------------------------------------------------------------------
-if [[ "${release_type}" != "Keep current version" ]]; then
-  log_stage "Setting app version" "${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}"
-fi
-
-# -----------------------------------------------------------------------------
 log_stage "Checking dependencies"
 
 typeset missing_dependencies=0
@@ -245,6 +240,12 @@ fi
 readonly apple_id=${secrets[${OP_APPLE_ID_REF}]}
 readonly notarytool_password=${secrets[${OP_NOTARYTOOL_PASSWORD_REF}]}
 readonly sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
+
+# -----------------------------------------------------------------------------
+if [[ "${release_type}" != "Keep current version" ]]; then
+  log_stage "Setting app version"
+  "${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}" &>/dev/null
+fi
 
 # -----------------------------------------------------------------------------
 log_stage "Reading build settings from Xcode"
@@ -351,7 +352,7 @@ run_command "Submitting zip file to notary service" xcrun notarytool submit \
 
 run_command "Stapling notarization ticket to app bundle" xcrun stapler staple "${bundle_path}"
 
-rm -f "${unnotarized_bundle_zip_path}" 2>/dev/null
+rm -f "${unnotarized_bundle_zip_path}" &>/dev/null
 
 # -----------------------------------------------------------------------------
 log_stage "Creating release artefacts"
@@ -418,20 +419,20 @@ if gh release view "v${version}" &>/dev/null; then
 
   cp "${notarized_bundle_zip_path}" "${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
 else
-  typeset draft_flag=""
-  typeset -a artefacts_to_upload=("${notarized_bundle_zip_path}")
+  typeset -a github_release_arguments=()
 
   if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
     release_is_draft=1
-    draft_flag="--draft"
-    artefacts_to_upload+=("${dmg_path}")
+    github_release_arguments+=("--draft" "${dmg_path}")
   fi
 
-  run_command "Creating release and uploading artefacts" gh release create "v${version}" \
+  github_release_arguments=("${notarized_bundle_zip_path}")
+
+  run_command "Creating release and uploading artefacts" gh release create \
+    "v${version}" \
     --title "Release ${version}" \
     --latest \
-    "${draft_flag}" \
-    "${artefacts_to_upload[@]}"
+    "${github_release_arguments[@]}"
 
   release_artefacts_uploaded=1
 fi
@@ -441,7 +442,7 @@ cd "${current_dir}"
 # -----------------------------------------------------------------------------
 log_stage "Release process complete"
 
-rm -rf "${TEMP_DIR}" 2>/dev/null
+rm -rf "${TEMP_DIR}" &>/dev/null
 
 if (( release_artefacts_uploaded )); then
   typeset github_release_url_label="GitHub release"
