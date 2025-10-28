@@ -1,12 +1,14 @@
 #!/bin/zsh
 
+set -o pipefail
+
 # =============================================================================
 # Configuration
 # =============================================================================
 
 # Constants
 readonly BUILD_SCHEME="" # TODO: Update
-readonly CONFIGURATION="Debug"
+readonly BUILD_CONFIGURATION="Debug"
 readonly DESTINATION="platform=macOS,arch=arm64"
 
 # Paths
@@ -16,7 +18,7 @@ readonly DERIVED_DATA_DIR="${PROJECT_DIR}/DerivedData"
 readonly BUILD_LOG_PATH="${DERIVED_DATA_DIR}/xcodebuild.log"
 
 # Dependencies
-readonly REQUIRED_COMMANDS=("xcodebuild" "xcbeautify" "xcode-build-server")
+readonly -a REQUIRED_COMMANDS=("xcodebuild" "xcbeautify" "xcode-build-server")
 
 # =============================================================================
 # Build Script
@@ -34,15 +36,17 @@ update_compilation_flags() {
   xcode-build-server parse -a "${BUILD_LOG_PATH}"
 }
 
-trap 'update_compilation_flags' EXIT
+trap "update_compilation_flags" EXIT
 
 mkdir -p "${BUILD_LOG_PATH:A:h}"
-[ -f "${BUILD_LOG_PATH}" ] && rm -rf "${BUILD_LOG_PATH}"
 
-set -o pipefail
+if [ -f "${BUILD_LOG_PATH}" ]; then
+  rm -rf "${BUILD_LOG_PATH}"
+fi
+
 xcodebuild build \
   -scheme ${BUILD_SCHEME} \
-  -configuration "${CONFIGURATION}" \
+  -configuration "${BUILD_CONFIGURATION}" \
   -destination "${DESTINATION}" \
   -derivedDataPath "${DERIVED_DATA_DIR}" \
   | tee "${BUILD_LOG_PATH}" \

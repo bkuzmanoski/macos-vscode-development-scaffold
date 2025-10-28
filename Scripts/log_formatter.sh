@@ -1,8 +1,7 @@
 #!/bin/zsh
 
 if (( # < 2 )); then
-  print -u2 "Error: Missing arguments."
-  print -u2 "Usage: $0 \"<process_path>\" \"<primary_subsystem>\""
+  print -u2 "Usage: ${0:t} \"<process_path>\" \"<primary_subsystem>\""
   exit 1
 fi
 
@@ -13,29 +12,21 @@ readonly PREDICATE="processImagePath == \"${PROCESS_PATH}\" AND (subsystem == \"
 command log stream --predicate "${PREDICATE}" --style ndjson | {
   read -r header
   jq -r --unbuffered --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" '
-    (
-      def colors: { "red": "\u001b[31m", "yellow": "\u001b[33m" };
-      def bold:   "\u001b[1m";
-      def reset:  "\u001b[0m";
+    def colors: {
+      "Fault": "\u001b[31m",
+      "Error": "\u001b[33m",
+      "Warning": "\u001b[33m"
+    };
 
-      (.timestamp | split(" ")[1] | split(".")[0]) as $time |
-      (
-        if .messageType == "Fault" then colors.red
-        elif .messageType == "Error" then colors.yellow
-        elif .messageType == "Warning" then colors.yellow
-        else ""
-        end
-      ) as $color |
-      (
-        if .subsystem and .subsystem != $primary_subsystem then
-          " (\(.subsystem))"
-        else
-          ""
-        end
-      ) as $subsystem_str |
-
-      $time + bold + " ‣ " + $color + .category + $subsystem_str + reset + "\n" +
-      .eventMessage + "\n"
-    )
+    (.timestamp | split(" ")[1] | split(".")[0]) +
+    "\u001b[1m" +
+    " ‣ " +
+    (colors[.messageType] // "") +
+    .category +
+    (if .subsystem and .subsystem != $primary_subsystem then " (\(.subsystem))" else "" end) +
+    "\u001b[0m" +
+    "\n" +
+    .eventMessage +
+    "\n"
   '
 }
