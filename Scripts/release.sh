@@ -52,7 +52,7 @@ readonly DMG_APP_DROP_LINK_POS_Y=274 # TODO: Update
 
 # Dependencies
 readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "op" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
-readonly -a REQUIRED_XCODE_TOOLS=("agvtool" "notarytool" "stapler")
+readonly -a REQUIRED_XCODE_TOOLS=("notarytool" "stapler")
 readonly -a REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${DMG_BACKGROUND_PATH}")
 readonly -a REQUIRED_SECRETS=( "${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
 readonly -a REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MACOSX_DEPLOYMENT_TARGET" "MARKETING_VERSION" "CURRENT_PROJECT_VERSION")
