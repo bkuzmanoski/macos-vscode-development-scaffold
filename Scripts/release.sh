@@ -26,7 +26,7 @@ readonly SIGNING_IDENTITY="" # TODO: Update
 readonly XCODE_PROJECT_PATH="${PROJECT_DIR}/<AppName>.xcodeproj" # TODO: Update
 readonly BUILD_SCHEME="" # TODO: Update
 readonly -A RELEASE_CONFIGURATIONS=( # TODO: Update
-  # [plugin]=build_configuration|release_repository_dir|release_repository_name
+  # [plugin]=build_configuration[|release_repository_dir|release_repository_name]
 )
 readonly PRODUCTION_RELEASE_CONFIGURATION_KEY="" # TODO: Update
 
@@ -130,7 +130,7 @@ for ((i=1; i<=${#release_configuration_keys[@]}; i++)); do
   print "${OUTPUT_PADDING}${i}) ${release_configuration_keys[$i]}"
 done
 
-print ""
+print
 
 while true; do
   read "CHOICE?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
@@ -147,11 +147,20 @@ done
 
 typeset -a release_configuration_parts=("${(s:|:)RELEASE_CONFIGURATIONS[$release_configuration_key]}")
 typeset build_configuration="${release_configuration_parts[1]}"
-typeset release_repository_dir="${release_configuration_parts[2]}"
-typeset release_repository_name="${release_configuration_parts[3]}"
+typeset local_release=0
+typeset release_repository_dir
+typeset release_repository_name
 
-if [[ ! -d "${release_repository_dir}" ]]; then
-  log_failure_and_exit "Release repository directory does not exist: ${release_repository_dir}"
+if (( ${#release_configuration_parts[@]} < 3 )); then
+  local_release=1
+  log_warning "No release repository configured for '${release_configuration_key}' releases. Release artefacts will not be uploaded to GitHub."
+else
+  release_repository_dir="${release_configuration_parts[2]}"
+  release_repository_name="${release_configuration_parts[3]}"
+
+  if [[ ! -d "${release_repository_dir}" ]]; then
+    log_failure_and_exit "Release repository directory does not exist: ${release_repository_dir}"
+  fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -164,7 +173,7 @@ for ((i=1; i<=${#release_type_options[@]}; i++)); do
   print "${OUTPUT_PADDING}${i}) ${release_type_options[$i]}"
 done
 
-print ""
+print
 
 while true; do
   read "CHOICE?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
@@ -391,63 +400,69 @@ run_command "Uploading dSYMs" sentry-cli debug-files upload \
   ${archive_path}/dSYMs
 
 # -----------------------------------------------------------------------------
-log_stage "Creating GitHub release"
-
-typeset current_dir="${PWD}"
-
-cd "${release_repository_dir}"
-
-if git rev-parse -q --verify "refs/tags/v${version}" &>/dev/null; then
-  log_warning "Tag 'v${version}' already exists, skipping creation"
-else
-  run_command "Creating tag" git tag -a "v${version}" -m "Release version ${version_and_build_number}"
-  run_command "Pushing tag to remote repository" git push origin "v${version}"
-fi
-
 typeset release_artefacts_dir="${RELEASES_DIR}/To upload"
 typeset release_artefacts_uploaded=0
-typeset release_is_draft=0
+typeset github_release_is_draft=0
 
-if gh release view "v${version}" &>/dev/null; then
-  log_warning "Release for tag 'v${version}' already exists, skipping creation"
-
+if (( local_release )); then
   mkdir -p "${release_artefacts_dir}"
-
-  if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
-    cp "${dmg_path}" "${release_artefacts_dir}/${dmg_path:t}"
-  fi
-
   cp "${notarized_bundle_zip_path}" "${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
 else
-  typeset -a github_release_arguments=()
+  log_stage "Creating GitHub release"
 
-  if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
-    release_is_draft=1
-    github_release_arguments+=("--draft" "${dmg_path}")
+  typeset current_dir="${PWD}"
+
+  cd "${release_repository_dir}"
+
+  if git rev-parse -q --verify "refs/tags/v${version}" &>/dev/null; then
+    log_warning "Tag 'v${version}' already exists, skipping creation"
+  else
+    run_command "Creating tag" git tag -a "v${version}" -m "Release version ${version_and_build_number}"
+    run_command "Pushing tag to remote repository" git push origin "v${version}"
   fi
 
-  github_release_arguments=("${notarized_bundle_zip_path}")
+  if gh release view "v${version}" &>/dev/null; then
+    log_warning "Release for tag 'v${version}' already exists, skipping creation"
 
-  run_command "Creating release and uploading artefacts" gh release create \
-    "v${version}" \
-    --title "Release ${version}" \
-    --latest \
-    "${github_release_arguments[@]}"
+    mkdir -p "${release_artefacts_dir}"
+    cp "${notarized_bundle_zip_path}" "${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
 
-  release_artefacts_uploaded=1
+    if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
+      cp "${dmg_path}" "${release_artefacts_dir}/${dmg_path:t}"
+    fi
+  else
+    typeset -a github_release_arguments=()
+
+    if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
+      github_release_is_draft=1
+      github_release_arguments+=("--draft" "${dmg_path}")
+    fi
+
+    github_release_arguments=("${notarized_bundle_zip_path}")
+
+    run_command "Creating release and uploading artefacts" gh release create \
+      "v${version}" \
+      --title "Release ${version}" \
+      --latest \
+      "${github_release_arguments[@]}"
+
+    release_artefacts_uploaded=1
+  fi
+
+  cd "${current_dir}"
 fi
-
-cd "${current_dir}"
 
 # -----------------------------------------------------------------------------
 log_stage "Release process complete"
 
 rm -rf "${TEMP_DIR}" &>/dev/null
 
-if (( release_artefacts_uploaded )); then
+if (( local_release )); then
+  log_info "App bundle: ${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
+elif (( release_artefacts_uploaded )); then
   typeset github_release_url_label="GitHub release"
 
-  if (( release_is_draft )); then
+  if (( github_release_is_draft )); then
     github_release_url_label+=" (draft)"
   fi
 
@@ -455,3 +470,4 @@ if (( release_artefacts_uploaded )); then
 else
   log_warning "Release artefacts ready for manual upload in: ${release_artefacts_dir}"
 fi
+
