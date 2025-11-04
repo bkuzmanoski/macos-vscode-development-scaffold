@@ -291,7 +291,6 @@ if [[ ${#missing_settings[@]} -gt 0 ]]; then
 fi
 
 readonly product_name=${build_settings[PRODUCT_NAME]}
-readonly minimum_system_version=${build_settings[MACOSX_DEPLOYMENT_TARGET]}
 readonly version=${build_settings[MARKETING_VERSION]}
 readonly build_number=${build_settings[CURRENT_PROJECT_VERSION]}
 readonly version_and_build_number="${version} (${build_number})"
