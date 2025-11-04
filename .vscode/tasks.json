@@ -53,7 +53,19 @@
     {
       "label": "Stream Log",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/log_formatter.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleID}\"",
+      "command": "${workspaceFolder}/scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleID}\"",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "panel": "dedicated",
+        "echo": false,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Monitor Resource Usage",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/monitor.sh \"${config:appName}\"",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
