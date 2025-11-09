@@ -63,5 +63,5 @@ typeset new_project_version=$(( current_project_version++ ))
 sed -i '' -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${new_marketing_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]+;/CURRENT_PROJECT_VERSION = ${new_project_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 
-print "Marketing Version:\t${current_marketing_version}\t→ ${new_marketing_version}"
-print "Project Version (Build Number):\t${current_project_version}\t→ ${new_project_version}"
+print "Marketing Version:              ${current_marketing_version}\t→ ${new_marketing_version}"
+print "Project Version (Build Number): ${current_project_version}\t→ ${new_project_version}"
