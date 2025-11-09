@@ -19,49 +19,49 @@ typeset current_marketing_version
 typeset current_project_version
 
 for line in "${project_settings_lines[@]}"; do
-  if [[ ${line} =~ 'MARKETING_VERSION = ([^;]+);' ]]; then
+  if [[ "${line}" =~ 'MARKETING_VERSION = ([^;]+);' ]]; then
     current_marketing_version=${match[1]}
-  elif [[ ${line} =~ 'CURRENT_PROJECT_VERSION = ([^;]+);' ]]; then
+  elif [[ "${line}" =~ 'CURRENT_PROJECT_VERSION = ([^;]+);' ]]; then
     current_project_version=${match[1]}
   fi
 
-  if [[ -n ${current_marketing_version} && -n ${current_project_version} ]]; then
+  if [[ -n "${current_marketing_version}" && -n "${current_project_version}" ]]; then
     break
   fi
 done
 
-if [[ -z ${current_marketing_version} || -z ${current_project_version} ]]; then
+if [[ -z "${current_marketing_version}" || -z "${current_project_version}" ]]; then
   print -u2 "Error: Could not find current version or build number."
   exit 1
 fi
 
 typeset -a marketing_version_parts=("${(@s:.:)current_marketing_version}")
 
-if [[ ${#marketing_version_parts[@]} -ne 3 ]]; then
+if [[ "${#marketing_version_parts[@]}" -ne 3 ]]; then
   print -u2 "Error: Current version '${current_marketing_version}' is not in 'MAJOR.MINOR.PATCH' format."
   exit 1
 fi
 
 case "${VERSION_BUMP_TYPE}" in
   --major)
-    ((marketing_version_parts[1]++))
+    (( marketing_version_parts[1]++ ))
     marketing_version_parts[2]=0
     marketing_version_parts[3]=0
     ;;
   --minor)
-    ((marketing_version_parts[2]++))
+    (( marketing_version_parts[2]++ ))
     marketing_version_parts[3]=0
     ;;
   --patch)
-    ((marketing_version_parts[3]++))
+    (( marketing_version_parts[3]++ ))
     ;;
 esac
 
 typeset new_marketing_version="${(j:.:)marketing_version_parts}"
-typeset new_project_version=$((current_project_version + 1))
+typeset new_project_version=$(( current_project_version++ ))
 
 sed -i '' -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${new_marketing_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]+;/CURRENT_PROJECT_VERSION = ${new_project_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 
-print "Marketing Version:              ${current_marketing_version}\t→ ${new_marketing_version}"
-print "Project Version (Build Number): ${current_project_version}\t→ ${new_project_version}"
+print "Marketing Version:\t${current_marketing_version}\t→ ${new_marketing_version}"
+print "Project Version (Build Number):\t${current_project_version}\t→ ${new_project_version}"

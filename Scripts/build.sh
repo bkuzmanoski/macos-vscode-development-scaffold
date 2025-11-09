@@ -45,7 +45,7 @@ if [ -f "${BUILD_LOG_PATH}" ]; then
 fi
 
 xcodebuild build \
-  -scheme ${BUILD_SCHEME} \
+  -scheme "${BUILD_SCHEME}" \
   -configuration "${BUILD_CONFIGURATION}" \
   -destination "${DESTINATION}" \
   -derivedDataPath "${DERIVED_DATA_DIR}" \

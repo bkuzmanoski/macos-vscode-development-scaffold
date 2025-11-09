@@ -91,7 +91,7 @@ log_failure_and_exit() {
 clear_lines() {
   local number_of_lines=${1:-1}
 
-  for ((i=1; i<=number_of_lines; i++)); do
+  for (( i=1; i<=number_of_lines; i++ )); do
     print -nP '\e[1A\e[2K\r'
   done
 }
@@ -104,9 +104,10 @@ run_command() {
   print "[$(date +%H:%M:%S)] $@" >> "${COMMAND_OUTPUT_PATH}"
 
   local output
-  local exit_code=0
+  local exit_code
 
-  output=$("$@" 2>&1) || exit_code=$?
+  output=$("$@" 2>&1)
+  exit_code=$?
 
   print "${output}\n" >> "${COMMAND_OUTPUT_PATH}"
 
@@ -126,18 +127,18 @@ log_stage "Select release configuration"
 typeset -a release_configuration_keys=("${(@ko)RELEASE_CONFIGURATIONS}")
 typeset release_configuration_key
 
-for ((i=1; i<=${#release_configuration_keys[@]}; i++)); do
+for (( i=1; i<=${#release_configuration_keys[@]}; i++ )); do
   print "${OUTPUT_PADDING}${i}) ${release_configuration_keys[$i]}"
 done
 
 print
 
 while true; do
-  read "CHOICE?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
+  read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
 
-  if [[ "${CHOICE}" =~ ^[1-9][0-9]*$ ]] && (( CHOICE >= 1 && CHOICE <= ${#release_configuration_keys[@]} )); then
-    release_configuration_key="${release_configuration_keys[$CHOICE]}"
-    clear_lines $(( ${#release_configuration_keys[@]} + 2 ))
+  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && (( choice >= 1 && choice <= ${#release_configuration_keys[@]} )); then
+    release_configuration_key="${release_configuration_keys[${choice}]}"
+    clear_lines "$(( ${#release_configuration_keys[@]} + 2 ))"
     log_success "${release_configuration_key}"
     break
   else
@@ -164,23 +165,24 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+
 log_stage "Select release type"
 
 typeset -a release_type_options=("Major" "Minor" "Patch" "Keep current version")
 typeset release_type
 
-for ((i=1; i<=${#release_type_options[@]}; i++)); do
+for (( i=1; i<=${#release_type_options[@]}; i++ )); do
   print "${OUTPUT_PADDING}${i}) ${release_type_options[$i]}"
 done
 
 print
 
 while true; do
-  read "CHOICE?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
+  read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
 
-  if [[ "${CHOICE}" =~ ^[1-9][0-9]*$ ]] && (( CHOICE >= 1 && CHOICE <= ${#release_type_options[@]} )); then
-    release_type="${release_type_options[$CHOICE]}"
-    clear_lines $(( ${#release_type_options[@]} + 2 ))
+  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && (( choice >= 1 && choice <= ${#release_type_options[@]} )); then
+    release_type="${release_type_options[${choice}]}"
+    clear_lines "$(( ${#release_type_options[@]} + 2 ))"
     log_success "${release_type}"
     break
   else
@@ -189,6 +191,7 @@ while true; do
 done
 
 # -----------------------------------------------------------------------------
+
 log_stage "Checking dependencies"
 
 typeset missing_dependencies=0
@@ -196,25 +199,33 @@ typeset missing_dependencies=0
 for command in "${REQUIRED_COMMANDS[@]}"; do
   if ! command -v "${command}" &>/dev/null; then
     log_error "${command}"
-    missing_dependencies=$((missing_dependencies + 1))
+    missing_dependencies=$(( missing_dependencies + 1 ))
   else
     log_success "${command}"
   fi
 done
 
+if [[ ${missing_dependencies} -gt 0 ]]; then
+  log_failure_and_exit "One or more dependencies are missing."
+fi
+
 for xcode_tool in "${REQUIRED_XCODE_TOOLS[@]}"; do
   if ! xcrun --find "${xcode_tool}" &>/dev/null; then
     log_error "${xcode_tool}"
-    missing_dependencies=$((missing_dependencies + 1))
+    missing_dependencies=$(( missing_dependencies + 1 ))
   else
     log_success "${xcode_tool}"
   fi
 done
 
+if [[ ${missing_dependencies} -gt 0 ]]; then
+  log_failure_and_exit "One or more dependencies are missing."
+fi
+
 for required_path in "${REQUIRED_PATHS[@]}"; do
   if [[ ! -e "${required_path}" ]]; then
     log_error "${required_path}"
-    missing_dependencies=$((missing_dependencies + 1))
+    missing_dependencies=$(( missing_dependencies + 1 ))
   else
     log_success "${required_path}"
   fi
@@ -225,6 +236,7 @@ if [[ ${missing_dependencies} -gt 0 ]]; then
 fi
 
 # -----------------------------------------------------------------------------
+
 log_stage "Retrieving secrets from 1Password"
 
 typeset -A secrets
@@ -233,7 +245,7 @@ typeset -a missing_secrets=()
 for secret_ref in "${REQUIRED_SECRETS[@]}"; do
   typeset secret_value=$(op read --no-newline "${secret_ref}" 2>/dev/null)
 
-  if [[ $? -ne 0 || -z "${secret_value}" ]]; then
+  if [[ -z "${secret_value}" ]]; then
     log_error "${secret_ref}"
     missing_secrets+=("${secret_ref}")
   else
@@ -251,12 +263,14 @@ readonly notarytool_password=${secrets[${OP_NOTARYTOOL_PASSWORD_REF}]}
 readonly sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
 
 # -----------------------------------------------------------------------------
+
 if [[ "${release_type}" != "Keep current version" ]]; then
   log_stage "Setting app version"
   "${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}" &>/dev/null
 fi
 
 # -----------------------------------------------------------------------------
+
 log_stage "Reading build settings from Xcode"
 
 typeset -A build_settings=(
@@ -296,6 +310,7 @@ readonly build_number=${build_settings[CURRENT_PROJECT_VERSION]}
 readonly version_and_build_number="${version} (${build_number})"
 
 # -----------------------------------------------------------------------------
+
 log_stage "Starting release process"
 
 log_info "Development team: ${DEVELOPMENT_TEAM}"
@@ -309,6 +324,7 @@ log_info "Sentry project: ${SENTRY_PROJECT}"
 mkdir -p "${TEMP_DIR}"
 
 # -----------------------------------------------------------------------------
+
 log_stage "Creating app bundle"
 
 readonly staging_dir="${TEMP_DIR}/Staging"
@@ -345,6 +361,7 @@ run_command "Exporting app bundle" xcodebuild \
   -exportOptionsPlist "${export_options_plist_path}"
 
 # -----------------------------------------------------------------------------
+
 log_stage "Notarizing app bundle"
 
 readonly unnotarized_bundle_zip_path="${TEMP_DIR}/${product_name} ${version_and_build_number} Unnotarized.zip"
@@ -363,6 +380,7 @@ run_command "Stapling notarization ticket to app bundle" xcrun stapler staple "$
 rm -f "${unnotarized_bundle_zip_path}" &>/dev/null
 
 # -----------------------------------------------------------------------------
+
 log_stage "Creating release artefacts"
 
 readonly notarized_bundle_zip_path="${TEMP_DIR}/${product_name} ${version_and_build_number}.zip"
@@ -389,6 +407,7 @@ fi
 run_command "Zipping notarized app bundle" ditto -c -k --sequesterRsrc --keepParent "${bundle_path}" "${notarized_bundle_zip_path}"
 
 # -----------------------------------------------------------------------------
+
 log_stage "Uploading debug symbols to Sentry"
 
 run_command "Uploading dSYMs" sentry-cli debug-files upload \
@@ -396,9 +415,10 @@ run_command "Uploading dSYMs" sentry-cli debug-files upload \
   --auth-token "${sentry_auth_token}" \
   --org "${SENTRY_ORG}" \
   --project "${SENTRY_PROJECT}" \
-  ${archive_path}/dSYMs
+  "${archive_path}/dSYMs"
 
 # -----------------------------------------------------------------------------
+
 typeset release_artefacts_dir="${RELEASES_DIR}/To upload"
 typeset release_artefacts_uploaded=0
 typeset github_release_is_draft=0
@@ -452,6 +472,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+
 log_stage "Release process complete"
 
 rm -rf "${TEMP_DIR}" &>/dev/null
@@ -469,4 +490,3 @@ elif (( release_artefacts_uploaded )); then
 else
   log_warning "Release artefacts ready for manual upload in: ${release_artefacts_dir}"
 fi
-

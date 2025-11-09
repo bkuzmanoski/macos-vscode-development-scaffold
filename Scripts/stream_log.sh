@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 if (( # < 2 )); then
-  print -u2 "Usage: ${0:t} \"<process_path>\" \"<primary_subsystem>\""
+  print -u2 "Usage: ${0:t} <process_path> <primary_subsystem>"
   exit 1
 fi
 
