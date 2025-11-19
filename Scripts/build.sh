@@ -36,7 +36,10 @@ update_compilation_flags() {
   xcode-build-server parse -a "${BUILD_LOG_PATH}"
 }
 
-trap "update_compilation_flags" EXIT
+trap '
+  update_compilation_flags
+  print "\n$(date +"%Y-%m-%d %H:%M:%S")"
+' EXIT
 
 mkdir -p "${BUILD_LOG_PATH:A:h}"
 
