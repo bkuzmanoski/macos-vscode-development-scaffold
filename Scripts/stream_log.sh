@@ -14,7 +14,7 @@ command log stream --predicate "${PREDICATE}" --style ndjson | {
   jq -r --unbuffered --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" '
     def colors: {
       "Fault": "\u001b[31m",
-      "Error": "\u001b[33m",
+      "Error": "\u001b[31m",
       "Warning": "\u001b[33m"
     };
 
