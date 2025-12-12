@@ -5,4 +5,4 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-top -stats command,cpu,mem | grep "${1::15}"
+top -stats pid,command,cpu,mem | grep "${1::15}"
