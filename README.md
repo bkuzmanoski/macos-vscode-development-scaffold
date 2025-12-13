@@ -1,6 +1,6 @@
 # macOS App Development using VSCode
 
-This repository contains my personal scaffold for developing macOS applications. It uses an Xcode project but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used (Sentry, Sparkle, GitHub Releases, etc.), etc., so it may not be suitable for your needs.
+This repository contains my personal scaffold for developing macOS applications. It uses an Xcode project but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used, etc., so it may not be suitable for your needs.
 
 ## Features
 
