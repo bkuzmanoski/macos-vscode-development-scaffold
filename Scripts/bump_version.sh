@@ -58,7 +58,7 @@ case "${VERSION_BUMP_TYPE}" in
 esac
 
 typeset new_marketing_version="${(j:.:)marketing_version_parts}"
-typeset new_project_version=$(( current_project_version++ ))
+typeset new_project_version=$(( current_project_version + 1 ))
 
 sed -i '' -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${new_marketing_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]+;/CURRENT_PROJECT_VERSION = ${new_project_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
