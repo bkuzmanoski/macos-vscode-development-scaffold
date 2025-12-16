@@ -457,7 +457,7 @@ else
       github_release_arguments+=("--draft" "${dmg_path}")
     fi
 
-    github_release_arguments=("${notarized_bundle_zip_path}")
+    github_release_arguments+=("${notarized_bundle_zip_path}")
 
     run_command "Creating release and uploading artefacts" gh release create \
       "v${version}" \
