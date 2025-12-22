@@ -7,7 +7,7 @@ fi
 
 readonly PROCESS_PATH="$1"
 readonly PRIMARY_SUBSYSTEM="$2"
-readonly PREDICATE="processImagePath == \"${PROCESS_PATH}\" AND (subsystem == \"${PRIMARY_SUBSYSTEM}\" OR messageType != 0)"
+readonly PREDICATE="processImagePath == \"${PROCESS_PATH}\" AND (subsystem == \"${PRIMARY_SUBSYSTEM}\" OR messageType == 16 OR messageType == 17)"
 
 command log stream --predicate "${PREDICATE}" --level debug --style ndjson | {
   read -r header
