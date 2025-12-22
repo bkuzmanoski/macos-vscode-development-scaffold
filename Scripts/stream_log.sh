@@ -9,7 +9,7 @@ readonly PROCESS_PATH="$1"
 readonly PRIMARY_SUBSYSTEM="$2"
 readonly PREDICATE="processImagePath == \"${PROCESS_PATH}\" AND (subsystem == \"${PRIMARY_SUBSYSTEM}\" OR messageType != 0)"
 
-command log stream --predicate "${PREDICATE}" --style ndjson | {
+command log stream --predicate "${PREDICATE}" --level debug --style ndjson | {
   read -r header
   jq -r --unbuffered --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" '
     def colors: {
