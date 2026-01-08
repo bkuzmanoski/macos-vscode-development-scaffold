@@ -2,21 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "lldb",
+      "type": "lldb-dap",
       "request": "launch",
       "name": "Debug",
-      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
-      "terminal": "console",
-      "internalConsoleOptions": "neverOpen"
+      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}"
     },
     {
-      "type": "lldb",
+      "type": "lldb-dap",
       "request": "launch",
       "name": "Build and Debug",
       "preLaunchTask": "Build",
-      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}",
-      "terminal": "console",
-      "internalConsoleOptions": "neverOpen"
+      "program": "${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}"
     }
   ]
 }
