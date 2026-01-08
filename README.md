@@ -1,11 +1,11 @@
 # macOS App Development using VSCode
 
-This repository contains my personal scaffold for developing macOS applications. It uses an Xcode project but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used, etc., so it may not be suitable for your needs.
+This repository contains my VSCode scaffold for developing macOS applications. It uses an Xcode project for bundling but all development is done in VSCode. It makes a bunch of assumptions about development environment, workflow, app signing, services used, etc., so it may not be suitable for your needs.
 
 ## Features
 
 - Swift LSP support
-- Debugging using CodeLLDB with pretty-printing for console output
+- Debugging using LLDB with pretty-printing for console output
 - Automated release script (publishes to GitHub Releases, uploads dSYMs to Sentry, etc.)
 - And some other things...
 
@@ -23,7 +23,6 @@ This repository contains my personal scaffold for developing macOS applications.
 ## Required VSCode Extensions
 
 - [Swift](https://marketplace.visualstudio.com/items?itemName=swiftlang.swift-vscode)
-- [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)
 - [LLDB DAP](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.lldb-dap)
 
 ## Initial Setup
