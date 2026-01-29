@@ -63,32 +63,32 @@ readonly -a REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MACOSX_DEPLOYMENT_TARGET" "
 
 readonly OUTPUT_PADDING="           "
 
-log_stage() {
+function log_stage() {
   print -P "\n$(date +%H:%M:%S) %B‣ $@%b"
 }
 
-log_info() {
+function log_info() {
   print "${OUTPUT_PADDING}– $@"
 }
 
-log_success() {
+function log_success() {
   print -P "${OUTPUT_PADDING}%F{green}✓ $@%f"
 }
 
-log_warning() {
+function log_warning() {
   print -P "${OUTPUT_PADDING}%F{yellow}! $@%f"
 }
 
-log_error() {
+function log_error() {
   print -P "${OUTPUT_PADDING}%F{red}✗ $@%f"
 }
 
-log_failure_and_exit() {
+function log_failure_and_exit() {
   print -P "\n%F{red}%BRelease failed%b%f\n$@"
   exit 1
 }
 
-clear_lines() {
+function clear_lines() {
   local number_of_lines=${1:-1}
 
   for (( i=1; i<=number_of_lines; i++ )); do
@@ -96,7 +96,7 @@ clear_lines() {
   done
 }
 
-run_command() {
+function run_command() {
   local command_description=$1
   shift
 

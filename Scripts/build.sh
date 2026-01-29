@@ -31,7 +31,7 @@ for command in "${REQUIRED_COMMANDS[@]}"; do
   fi
 done
 
-update_compilation_flags() {
+function update_compilation_flags() {
   cd "${PROJECT_DIR}"
   xcode-build-server parse -a "${BUILD_LOG_PATH}"
 }
