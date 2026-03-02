@@ -3,4 +3,4 @@
 buildServer.json
 *.xcuserdatad/
 DerivedData/
-Releases/Temp
+Releases/TemporaryItems/

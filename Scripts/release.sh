@@ -11,9 +11,9 @@ readonly SCRIPT_DIR="${0:A:h}"
 readonly PROJECT_DIR="${SCRIPT_DIR}/.."
 readonly RELEASES_DIR="${PROJECT_DIR}/Releases"
 readonly ASSETS_DIR="${RELEASES_DIR}/Assets"
-readonly TEMP_DIR="${RELEASES_DIR}/Temp"
+readonly TEMPORARYITEMS_DIR="${RELEASES_DIR}/TemporaryItems"
 readonly BUMP_VERSION_SCRIPT_PATH="${SCRIPT_DIR}/bump_version.sh"
-readonly COMMAND_OUTPUT_PATH="${TEMP_DIR}/command_output.log"
+readonly COMMAND_OUTPUT_PATH="${TEMPORARYITEMS_DIR}/command_output.log"
 
 # 1Password Secrets References
 readonly OP_APPLE_ID_REF="op://path/to/secret" # TODO: Update
@@ -321,15 +321,15 @@ log_info "Build configuration: ${build_configuration}"
 log_info "Sentry organization: ${SENTRY_ORG}"
 log_info "Sentry project: ${SENTRY_PROJECT}"
 
-mkdir -p "${TEMP_DIR}"
+mkdir -p "${TEMPORARYITEMS_DIR}"
 
 # -----------------------------------------------------------------------------
 
 log_stage "Creating app bundle"
 
-readonly staging_dir="${TEMP_DIR}/Staging"
-readonly export_options_plist_path="${TEMP_DIR}/ExportOptions.plist"
-readonly archive_path="${TEMP_DIR}/${product_name} ${version_and_build_number}.xcarchive"
+readonly staging_dir="${TEMPORARYITEMS_DIR}/Staging"
+readonly export_options_plist_path="${TEMPORARYITEMS_DIR}/ExportOptions.plist"
+readonly archive_path="${TEMPORARYITEMS_DIR}/${product_name} ${version_and_build_number}.xcarchive"
 readonly bundle_path="${staging_dir}/${product_name}.app"
 
 run_command "Archiving application" xcodebuild archive \
@@ -364,7 +364,7 @@ run_command "Exporting app bundle" xcodebuild \
 
 log_stage "Notarizing app bundle"
 
-readonly unnotarized_bundle_zip_path="${TEMP_DIR}/${product_name} ${version_and_build_number} Unnotarized.zip"
+readonly unnotarized_bundle_zip_path="${TEMPORARYITEMS_DIR}/${product_name} ${version_and_build_number} Unnotarized.zip"
 
 run_command "Zipping app bundle for notarization" ditto -c -k --sequesterRsrc --keepParent "${bundle_path}" "${unnotarized_bundle_zip_path}"
 
@@ -383,10 +383,10 @@ rm -f "${unnotarized_bundle_zip_path}" &>/dev/null
 
 log_stage "Creating release artefacts"
 
-readonly notarized_bundle_zip_path="${TEMP_DIR}/${product_name} ${version_and_build_number}.zip"
+readonly notarized_bundle_zip_path="${TEMPORARYITEMS_DIR}/${product_name} ${version_and_build_number}.zip"
 
 if [[ "${release_configuration_key}" == "${PRODUCTION_RELEASE_CONFIGURATION_KEY}" ]]; then
-  readonly dmg_path="${TEMP_DIR}/${DMG_FILENAME}"
+  readonly dmg_path="${TEMPORARYITEMS_DIR}/${DMG_FILENAME}"
 
   run_command "Creating DMG" create-dmg \
     --volname "${product_name}" \
@@ -475,7 +475,7 @@ fi
 
 log_stage "Release process complete"
 
-rm -rf "${TEMP_DIR}" &>/dev/null
+rm -rf "${TEMPORARYITEMS_DIR}" &>/dev/null
 
 if (( local_release )); then
   log_info "App bundle: ${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
