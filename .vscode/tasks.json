@@ -53,7 +53,7 @@
     {
       "label": "Stream Log",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleID}\"",
+      "command": "${workspaceFolder}/scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleIdentifier}\"",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -84,14 +84,14 @@
     {
       "label": "Reset Permissions",
       "type": "shell",
-      "command": "tccutil reset All ${config:bundleID}",
+      "command": "tccutil reset All ${config:bundleIdentifier}",
       "problemMatcher": [],
       "presentation": { "close": true }
     },
     {
       "label": "Reset Defaults",
       "type": "shell",
-      "command": "defaults delete ${config:bundleID}",
+      "command": "defaults delete ${config:bundleIdentifier}",
       "problemMatcher": [],
       "presentation": { "close": true }
     },

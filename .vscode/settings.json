@@ -3,7 +3,7 @@
     "editor.defaultFormatter": "swiftlang.swift-vscode"
   },
   "appName": "AppName", // TODO: Replace with app name
-  "bundleID": "com.example.AppName", // TODO: Replace with the app's bundle identifier
+  "bundleIdentifier": "com.example.AppName", // TODO: Replace with the app's bundle identifier
   "files.watcherExclude": {
     "**/DerivedData": true,
     "**/Releases": true
