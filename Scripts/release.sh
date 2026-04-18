@@ -480,13 +480,11 @@ rm -rf "${TEMPORARYITEMS_DIR}" &>/dev/null
 if (( local_release )); then
   log_info "App bundle: ${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
 elif (( release_artefacts_uploaded )); then
-  typeset github_release_url_label="GitHub release"
-
   if (( github_release_is_draft )); then
-    github_release_url_label+=" (draft)"
+    log_info "GitHub release (draft): https://github.com/${RELEASE_REPOSITORY_OWNER}/${release_repository_name}/releases"
+  else
+    log_info "GitHub release: https://github.com/${RELEASE_REPOSITORY_OWNER}/${release_repository_name}/releases/tag/v${version}"
   fi
-
-  log_info "${github_release_url_label}: http://github.com/${RELEASE_REPOSITORY_OWNER}/${release_repository_name}/releases/tag/v${version}"
 else
   log_warning "Release artefacts ready for manual upload in: ${release_artefacts_dir}"
 fi
