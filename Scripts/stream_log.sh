@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-if (( # < 2 )); then
+if (($# < 2)); then
   print -u2 "Usage: ${0:t} <process_path> <primary_subsystem>"
   exit 1
 fi
@@ -20,12 +20,12 @@ function get_ignore_patterns_json() {
 }
 
 if [[ -f "${IGNORE_FILE_PATH}" ]]; then
-    print -u2 "Loaded ignore patterns from: ${IGNORE_FILE_PATH}\n"
+  print -u2 "Loaded ignore patterns from: ${IGNORE_FILE_PATH}\n"
 fi
 
 set -o pipefail
-command log stream --predicate "${PREDICATE}" --level debug --style ndjson | \
-  jq --raw-input --unbuffered --raw-output --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" --slurpfile ignore_patterns_json <(get_ignore_patterns_json) '
+command log stream --predicate "${PREDICATE}" --level debug --style ndjson \
+  | jq --raw-input --unbuffered --raw-output --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" --slurpfile ignore_patterns_json <(get_ignore_patterns_json) '
     try fromjson catch empty |
     ($ignore_patterns_json[0] // []) as $ignored_patterns |
     select(

@@ -54,7 +54,7 @@ readonly DMG_APP_DROP_LINK_POS_Y=274 # TODO: Update
 readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "op" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
 readonly -a REQUIRED_XCODE_TOOLS=("notarytool" "stapler")
 readonly -a REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${DMG_BACKGROUND_PATH}")
-readonly -a REQUIRED_SECRETS=( "${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
+readonly -a REQUIRED_SECRETS=("${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
 readonly -a REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MACOSX_DEPLOYMENT_TARGET" "MARKETING_VERSION" "CURRENT_PROJECT_VERSION")
 
 # =============================================================================
@@ -91,7 +91,7 @@ function log_failure_and_exit() {
 function clear_lines() {
   local number_of_lines=${1:-1}
 
-  for (( i=1; i<=number_of_lines; i++ )); do
+  for ((i = 1; i <= number_of_lines; i++)); do
     print -nP '\e[1A\e[2K\r'
   done
 }
@@ -101,7 +101,7 @@ function run_command() {
   shift
 
   log_info "${command_description}"
-  print "[$(date +%H:%M:%S)] $@" >> "${COMMAND_OUTPUT_PATH}"
+  print "[$(date +%H:%M:%S)] $@" >>"${COMMAND_OUTPUT_PATH}"
 
   local output
   local exit_code
@@ -109,7 +109,7 @@ function run_command() {
   output=$("$@" 2>&1)
   exit_code=$?
 
-  print "${output}\n" >> "${COMMAND_OUTPUT_PATH}"
+  print "${output}\n" >>"${COMMAND_OUTPUT_PATH}"
 
   if [[ ${exit_code} -ne 0 ]]; then
     clear_lines 1
@@ -127,7 +127,7 @@ log_stage "Select release configuration"
 typeset -a release_configuration_keys=("${(@ko)RELEASE_CONFIGURATIONS}")
 typeset release_configuration_key
 
-for (( i=1; i<=${#release_configuration_keys[@]}; i++ )); do
+for ((i = 1; i <= ${#release_configuration_keys[@]}; i++)); do
   print "${OUTPUT_PADDING}${i}) ${release_configuration_keys[$i]}"
 done
 
@@ -136,9 +136,9 @@ print
 while true; do
   read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
 
-  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && (( choice >= 1 && choice <= ${#release_configuration_keys[@]} )); then
+  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_configuration_keys[@]})); then
     release_configuration_key="${release_configuration_keys[${choice}]}"
-    clear_lines "$(( ${#release_configuration_keys[@]} + 2 ))"
+    clear_lines "$((${#release_configuration_keys[@]} + 2))"
     log_success "${release_configuration_key}"
     break
   else
@@ -152,7 +152,7 @@ typeset local_release=0
 typeset release_repository_dir
 typeset release_repository_name
 
-if (( ${#release_configuration_parts[@]} < 3 )); then
+if ((${#release_configuration_parts[@]} < 3)); then
   local_release=1
   log_warning "No release repository configured for '${release_configuration_key}' releases. Release artefacts will not be uploaded to GitHub."
 else
@@ -171,7 +171,7 @@ log_stage "Select release type"
 typeset -a release_type_options=("Major" "Minor" "Patch" "Keep current version")
 typeset release_type
 
-for (( i=1; i<=${#release_type_options[@]}; i++ )); do
+for ((i = 1; i <= ${#release_type_options[@]}; i++)); do
   print "${OUTPUT_PADDING}${i}) ${release_type_options[$i]}"
 done
 
@@ -180,9 +180,9 @@ print
 while true; do
   read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
 
-  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && (( choice >= 1 && choice <= ${#release_type_options[@]} )); then
+  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_type_options[@]})); then
     release_type="${release_type_options[${choice}]}"
-    clear_lines "$(( ${#release_type_options[@]} + 2 ))"
+    clear_lines "$((${#release_type_options[@]} + 2))"
     log_success "${release_type}"
     break
   else
@@ -199,7 +199,7 @@ typeset missing_dependencies=0
 for command in "${REQUIRED_COMMANDS[@]}"; do
   if ! command -v "${command}" &>/dev/null; then
     log_error "${command}"
-    missing_dependencies=$(( missing_dependencies + 1 ))
+    missing_dependencies=$((missing_dependencies + 1))
   else
     log_success "${command}"
   fi
@@ -212,7 +212,7 @@ fi
 for xcode_tool in "${REQUIRED_XCODE_TOOLS[@]}"; do
   if ! xcrun --find "${xcode_tool}" &>/dev/null; then
     log_error "${xcode_tool}"
-    missing_dependencies=$(( missing_dependencies + 1 ))
+    missing_dependencies=$((missing_dependencies + 1))
   else
     log_success "${xcode_tool}"
   fi
@@ -225,7 +225,7 @@ fi
 for required_path in "${REQUIRED_PATHS[@]}"; do
   if [[ ! -e "${required_path}" ]]; then
     log_error "${required_path}"
-    missing_dependencies=$(( missing_dependencies + 1 ))
+    missing_dependencies=$((missing_dependencies + 1))
   else
     log_success "${required_path}"
   fi
@@ -274,7 +274,7 @@ fi
 log_stage "Reading build settings from Xcode"
 
 typeset -A build_settings=(
-  "${(f)"$( \
+  "${(f)"$(
     xcodebuild \
       -project "${XCODE_PROJECT_PATH}" \
       -scheme "${BUILD_SCHEME}" \
@@ -282,11 +282,11 @@ typeset -A build_settings=(
       -showBuildSettings \
       -json \
       2>/dev/null \
-    | jq \
-      '.[0].buildSettings as $settings | $ARGS.positional[] | ., $settings[.]' \
-      --args "${REQUIRED_BUILD_SETTINGS[@]}" \
-      --raw-output \
-      2>/dev/null \
+      | jq \
+        '.[0].buildSettings as $settings | $ARGS.positional[] | ., $settings[.]' \
+        --args "${REQUIRED_BUILD_SETTINGS[@]}" \
+        --raw-output \
+        2>/dev/null
   )"}"
 )
 typeset -a missing_settings=()
@@ -339,7 +339,7 @@ run_command "Archiving application" xcodebuild archive \
   -archivePath "${archive_path}"
 
 log_info "Creating \"ExportOptions.plist\""
-command cat > "${export_options_plist_path}" <<- EOF
+command cat >"${export_options_plist_path}" <<-EOF
 	<?xml version="1.0" encoding="UTF-8"?>
 	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 	<plist version="1.0">
@@ -423,7 +423,7 @@ typeset release_artefacts_dir="${RELEASES_DIR}/To upload"
 typeset release_artefacts_uploaded=0
 typeset github_release_is_draft=0
 
-if (( local_release )); then
+if ((local_release)); then
   mkdir -p "${release_artefacts_dir}"
   cp "${notarized_bundle_zip_path}" "${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
 else
@@ -477,10 +477,10 @@ log_stage "Release process complete"
 
 rm -rf "${TEMPORARYITEMS_DIR}" &>/dev/null
 
-if (( local_release )); then
+if ((local_release)); then
   log_info "App bundle: ${release_artefacts_dir}/${notarized_bundle_zip_path:t}"
-elif (( release_artefacts_uploaded )); then
-  if (( github_release_is_draft )); then
+elif ((release_artefacts_uploaded)); then
+  if ((github_release_is_draft)); then
     log_info "GitHub release (draft): https://github.com/${RELEASE_REPOSITORY_OWNER}/${release_repository_name}/releases"
   else
     log_info "GitHub release: https://github.com/${RELEASE_REPOSITORY_OWNER}/${release_repository_name}/releases/tag/v${version}"

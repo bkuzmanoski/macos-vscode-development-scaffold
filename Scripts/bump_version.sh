@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-if (( # < 2 )); then
+if (($# < 2)); then
   print -u2 "Usage: ${0:t} [--major|--minor|--patch] <xcode_project_path>"
   exit 1
 fi
@@ -43,22 +43,22 @@ if [[ "${#marketing_version_parts[@]}" -ne 3 ]]; then
 fi
 
 case "${VERSION_BUMP_TYPE}" in
-  --major)
-    (( marketing_version_parts[1]++ ))
-    marketing_version_parts[2]=0
-    marketing_version_parts[3]=0
-    ;;
-  --minor)
-    (( marketing_version_parts[2]++ ))
-    marketing_version_parts[3]=0
-    ;;
-  --patch)
-    (( marketing_version_parts[3]++ ))
-    ;;
+--major)
+  ((marketing_version_parts[1]++))
+  marketing_version_parts[2]=0
+  marketing_version_parts[3]=0
+  ;;
+--minor)
+  ((marketing_version_parts[2]++))
+  marketing_version_parts[3]=0
+  ;;
+--patch)
+  ((marketing_version_parts[3]++))
+  ;;
 esac
 
 typeset new_marketing_version="${(j:.:)marketing_version_parts}"
-typeset new_project_version=$(( current_project_version + 1 ))
+typeset new_project_version=$((current_project_version + 1))
 
 sed -i '' -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${new_marketing_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]+;/CURRENT_PROJECT_VERSION = ${new_project_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
