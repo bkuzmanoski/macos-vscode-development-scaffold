@@ -16,39 +16,39 @@ readonly BUMP_VERSION_SCRIPT_PATH="${SCRIPT_DIR}/bump_version.sh"
 readonly COMMAND_OUTPUT_PATH="${TEMPORARYITEMS_DIR}/command_output.log"
 
 # 1Password Secrets References
-readonly OP_APPLE_ID_REF="op://path/to/secret" # TODO: Update
+readonly OP_APPLE_ID_REF="op://path/to/secret"            # TODO: Update
 readonly OP_NOTARYTOOL_PASSWORD_REF="op://path/to/secret" # TODO:  Update
-readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret" # TODO:  Update
+readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret"   # TODO:  Update
 
 # Project Settings
-readonly DEVELOPMENT_TEAM="" # TODO: Update
-readonly SIGNING_IDENTITY="" # TODO: Update
+readonly DEVELOPMENT_TEAM=""                                     # TODO: Update
+readonly SIGNING_IDENTITY=""                                     # TODO: Update
 readonly XCODE_PROJECT_PATH="${PROJECT_DIR}/<AppName>.xcodeproj" # TODO: Update
-readonly BUILD_SCHEME="" # TODO: Update
+readonly BUILD_SCHEME=""                                         # TODO: Update
 readonly -A RELEASE_CONFIGURATIONS=( # TODO: Update
   # [plugin]=build_configuration[|release_repository_dir|release_repository_name]
 )
 readonly PRODUCTION_RELEASE_CONFIGURATION_KEY="" # TODO: Update
 
 # Sentry Settings
-readonly SENTRY_ORG="" # TODO: Update
+readonly SENTRY_ORG=""     # TODO: Update
 readonly SENTRY_PROJECT="" # TODO: Update
 
 # GitHub Settings
 readonly RELEASE_REPOSITORY_OWNER="" # TODO: Update
 
 # DMG Settings
-readonly DMG_FILENAME="<AppName>.dmg" # TODO: Update
+readonly DMG_FILENAME="<AppName>.dmg"                          # TODO: Update
 readonly DMG_BACKGROUND_PATH="${ASSETS_DIR}/DMGBackground.png" # TODO: Update
-readonly DMG_WINDOW_POS_X=200 # TODO: Update
-readonly DMG_WINDOW_POS_Y=120 # TODO: Update
-readonly DMG_WINDOW_WIDTH=640 # TODO: Update
-readonly DMG_WINDOW_HEIGHT=540 # TODO: Update
-readonly DMG_ICON_SIZE=100 # TODO: Update
-readonly DMG_APP_ICON_POS_X=167 # TODO: Update
-readonly DMG_APP_ICON_POS_Y=274 # TODO: Update
-readonly DMG_APP_DROP_LINK_POS_X=473 # TODO: Update
-readonly DMG_APP_DROP_LINK_POS_Y=274 # TODO: Update
+readonly DMG_WINDOW_POS_X=200                                  # TODO: Update
+readonly DMG_WINDOW_POS_Y=120                                  # TODO: Update
+readonly DMG_WINDOW_WIDTH=640                                  # TODO: Update
+readonly DMG_WINDOW_HEIGHT=540                                 # TODO: Update
+readonly DMG_ICON_SIZE=100                                     # TODO: Update
+readonly DMG_APP_ICON_POS_X=167                                # TODO: Update
+readonly DMG_APP_ICON_POS_Y=274                                # TODO: Update
+readonly DMG_APP_DROP_LINK_POS_X=473                           # TODO: Update
+readonly DMG_APP_DROP_LINK_POS_Y=274                           # TODO: Update
 
 # Dependencies
 readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "op" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
@@ -64,32 +64,32 @@ readonly -a REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MACOSX_DEPLOYMENT_TARGET" "
 readonly OUTPUT_PADDING="           "
 
 function log_stage() {
-  print -P "\n$(date +%H:%M:%S) %B‣ $@%b"
+  print -P "\n$(date +%H:%M:%S) %B‣ $*%b"
 }
 
 function log_info() {
-  print "${OUTPUT_PADDING}– $@"
+  print "${OUTPUT_PADDING}– $*"
 }
 
 function log_success() {
-  print -P "${OUTPUT_PADDING}%F{green}✓ $@%f"
+  print -P "${OUTPUT_PADDING}%F{green}✓ $*%f"
 }
 
 function log_warning() {
-  print -P "${OUTPUT_PADDING}%F{yellow}! $@%f"
+  print -P "${OUTPUT_PADDING}%F{yellow}! $*%f"
 }
 
 function log_error() {
-  print -P "${OUTPUT_PADDING}%F{red}✗ $@%f"
+  print -P "${OUTPUT_PADDING}%F{red}✗ $*%f"
 }
 
 function log_failure_and_exit() {
-  print -P "\n%F{red}%BRelease failed%b%f\n$@"
+  print -P "\n%F{red}%BRelease failed%b%f\n$*"
   exit 1
 }
 
 function clear_lines() {
-  local number_of_lines=${1:-1}
+  local -r number_of_lines=${1:-1}
 
   for ((i = 1; i <= number_of_lines; i++)); do
     print -nP '\e[1A\e[2K\r'
@@ -97,11 +97,11 @@ function clear_lines() {
 }
 
 function run_command() {
-  local command_description=$1
+  local -r command_description=$1
   shift
 
   log_info "${command_description}"
-  print "[$(date +%H:%M:%S)] $@" >>"${COMMAND_OUTPUT_PATH}"
+  print "[$(date +%H:%M:%S)] $*" >>"${COMMAND_OUTPUT_PATH}"
 
   local output
   local exit_code
@@ -134,9 +134,9 @@ done
 print
 
 while true; do
-  read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
+  read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
 
-  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_configuration_keys[@]})); then
+  if [[ "${choice:?}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_configuration_keys[@]})); then
     release_configuration_key="${release_configuration_keys[${choice}]}"
     clear_lines "$((${#release_configuration_keys[@]} + 2))"
     log_success "${release_configuration_key}"
@@ -178,7 +178,7 @@ done
 print
 
 while true; do
-  read "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
+  read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
 
   if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_type_options[@]})); then
     release_type="${release_type_options[${choice}]}"
@@ -241,11 +241,10 @@ log_stage "Retrieving secrets from 1Password"
 
 typeset -A secrets
 typeset -a missing_secrets=()
+typeset secret_value
 
 for secret_ref in "${REQUIRED_SECRETS[@]}"; do
-  typeset secret_value=$(op read --no-newline "${secret_ref}" 2>/dev/null)
-
-  if [[ -z "${secret_value}" ]]; then
+  if ! secret_value=$(op read --no-newline "${secret_ref}" 2>/dev/null); then
     log_error "${secret_ref}"
     missing_secrets+=("${secret_ref}")
   else

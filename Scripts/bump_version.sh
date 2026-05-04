@@ -19,10 +19,10 @@ typeset current_marketing_version
 typeset current_project_version
 
 for line in "${project_settings_lines[@]}"; do
-  if [[ "${line}" =~ 'MARKETING_VERSION = ([^;]+);' ]]; then
-    current_marketing_version=${match[1]}
-  elif [[ "${line}" =~ 'CURRENT_PROJECT_VERSION = ([^;]+);' ]]; then
-    current_project_version=${match[1]}
+  if [[ "${line}" =~ MARKETING_VERSION\ =\ \([^\;]+\)\; ]]; then
+    current_marketing_version=${match[1]:=}
+  elif [[ "${line}" =~ CURRENT_PROJECT_VERSION\ =\ \([^\;]+\)\; ]]; then
+    current_project_version=${match[1]:=}
   fi
 
   if [[ -n "${current_marketing_version}" && -n "${current_project_version}" ]]; then

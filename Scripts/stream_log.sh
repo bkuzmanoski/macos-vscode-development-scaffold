@@ -24,6 +24,8 @@ if [[ -f "${IGNORE_FILE_PATH}" ]]; then
 fi
 
 set -o pipefail
+
+# shellcheck disable=SC2016
 command log stream --predicate "${PREDICATE}" --level debug --style ndjson \
   | jq --raw-input --unbuffered --raw-output --arg primary_subsystem "${PRIMARY_SUBSYSTEM}" --slurpfile ignore_patterns_json <(get_ignore_patterns_json) '
     try fromjson catch empty |
