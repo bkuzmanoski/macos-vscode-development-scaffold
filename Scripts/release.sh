@@ -1,6 +1,7 @@
 #!/bin/zsh
 
 set -u
+zmodload zsh/system
 
 # =============================================================================
 # Configuration
@@ -12,6 +13,7 @@ readonly PROJECT_DIR="${SCRIPT_DIR}/.."
 readonly RELEASES_DIR="${PROJECT_DIR}/Releases"
 readonly ASSETS_DIR="${RELEASES_DIR}/Assets"
 readonly TEMPORARYITEMS_DIR="${RELEASES_DIR}/TemporaryItems"
+readonly LOCK_FILE_PATH="${RELEASES_DIR}/release.lock"
 readonly BUMP_VERSION_SCRIPT_PATH="${SCRIPT_DIR}/bump_version.sh"
 readonly COMMAND_OUTPUT_PATH="${TEMPORARYITEMS_DIR}/command_output.log"
 
@@ -118,9 +120,36 @@ function run_command() {
   fi
 }
 
+typeset -g lock_fd=""
+
+function acquire_lock() {
+  if ! mkdir -p "${RELEASES_DIR}" &>/dev/null; then
+    log_failure_and_exit "Could not create releases directory: ${RELEASES_DIR}"
+  fi
+
+  touch "${LOCK_FILE_PATH}" 2>/dev/null
+
+  if ! zsystem flock -t 0 -f lock_fd "${LOCK_FILE_PATH}" 2>/dev/null; then
+    log_failure_and_exit "Another release process is already running."
+  fi
+}
+
+function release_lock() {
+  if [[ -n "${lock_fd}" ]]; then
+    zsystem flock -u "${lock_fd}" 2>/dev/null
+    lock_fd=""
+  fi
+}
+
 # =============================================================================
 # Release Script
 # =============================================================================
+
+acquire_lock
+
+trap 'release_lock' EXIT
+trap 'release_lock; exit 130' INT
+trap 'release_lock; exit 143' TERM
 
 log_stage "Select release configuration"
 

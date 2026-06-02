@@ -3,4 +3,5 @@
 buildServer.json
 *.xcuserdatad/
 DerivedData/
+Releases/release.lock
 Releases/TemporaryItems/
