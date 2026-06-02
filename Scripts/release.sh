@@ -1,7 +1,11 @@
 #!/bin/zsh
 
 set -u
-zmodload zsh/system
+
+if ! zmodload zsh/system; then
+  print -u2 "Could not load required module: zsh/system"
+  exit 1
+fi
 
 # =============================================================================
 # Configuration
@@ -127,10 +131,16 @@ function acquire_lock() {
     log_failure_and_exit "Could not create releases directory: ${RELEASES_DIR}"
   fi
 
-  touch "${LOCK_FILE_PATH}" 2>/dev/null
+  if ! zsystem supports flock &>/dev/null; then
+    log_failure_and_exit "Cannot acquire release lock (flock is not supported)."
+  fi
+
+  if ! touch "${LOCK_FILE_PATH}" 2>/dev/null; then
+    log_failure_and_exit "Could not create release lock file: ${LOCK_FILE_PATH}"
+  fi
 
   if ! zsystem flock -t 0 -f lock_fd "${LOCK_FILE_PATH}" 2>/dev/null; then
-    log_failure_and_exit "Another release process is already running."
+    log_failure_and_exit "Another process is holding a lock."
   fi
 }
 
