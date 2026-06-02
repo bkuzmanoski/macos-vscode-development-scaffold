@@ -21,10 +21,10 @@ readonly LOCK_FILE_PATH="${RELEASES_DIR}/release.lock"
 readonly BUMP_VERSION_SCRIPT_PATH="${SCRIPT_DIR}/bump_version.sh"
 readonly COMMAND_OUTPUT_PATH="${TEMPORARYITEMS_DIR}/command_output.log"
 
-# 1Password Secrets References
+# 1Password Secrets References (Interactive Sessions Only)
 readonly OP_APPLE_ID_REF="op://path/to/secret"            # TODO: Update
-readonly OP_NOTARYTOOL_PASSWORD_REF="op://path/to/secret" # TODO:  Update
-readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret"   # TODO:  Update
+readonly OP_NOTARYTOOL_PASSWORD_REF="op://path/to/secret" # TODO: Update
+readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret"   # TODO: Update
 
 # Project Settings
 readonly DEVELOPMENT_TEAM=""                                     # TODO: Update
@@ -57,7 +57,7 @@ readonly DMG_APP_DROP_LINK_POS_X=473                           # TODO: Update
 readonly DMG_APP_DROP_LINK_POS_Y=274                           # TODO: Update
 
 # Dependencies
-readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "op" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
+readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
 readonly -a REQUIRED_XCODE_TOOLS=("notarytool" "stapler")
 readonly -a REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${DMG_BACKGROUND_PATH}")
 readonly -a REQUIRED_SECRETS=("${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
@@ -132,7 +132,7 @@ function acquire_lock() {
   fi
 
   if ! zsystem supports flock &>/dev/null; then
-    log_failure_and_exit "Cannot acquire release lock (flock is not supported)."
+    log_failure_and_exit "Could not acquire release lock (flock is not supported)."
   fi
 
   if ! touch "${LOCK_FILE_PATH}" 2>/dev/null; then
@@ -164,26 +164,40 @@ trap 'release_lock; exit 143' TERM
 log_stage "Select release configuration"
 
 typeset -a release_configuration_keys=("${(@ko)RELEASE_CONFIGURATIONS}")
-typeset release_configuration_key
+typeset release_configuration_key="${RELEASE_CONFIGURATION:-}"
 
-for ((i = 1; i <= ${#release_configuration_keys[@]}; i++)); do
-  print "${OUTPUT_PADDING}${i}) ${release_configuration_keys[$i]}"
-done
-
-print
-
-while true; do
-  read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
-
-  if [[ "${choice:?}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_configuration_keys[@]})); then
-    release_configuration_key="${release_configuration_keys[${choice}]}"
-    clear_lines "$((${#release_configuration_keys[@]} + 2))"
-    log_success "${release_configuration_key}"
-    break
-  else
-    clear_lines 1
+if [[ -n "${release_configuration_key}" ]]; then
+  if [[ -z "${RELEASE_CONFIGURATIONS[$release_configuration_key]:-}" ]]; then
+    log_failure_and_exit "Invalid release configuration: ${release_configuration_key}"
   fi
-done
+
+  log_success "${release_configuration_key}"
+else
+  if [[ ! -t 0 ]]; then
+    log_failure_and_exit "Missing environment variable: RELEASE_CONFIGURATION"
+  fi
+
+  for ((i = 1; i <= ${#release_configuration_keys[@]}; i++)); do
+    print "${OUTPUT_PADDING}${i}) ${release_configuration_keys[$i]}"
+  done
+
+  print
+
+  while true; do
+    read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_configuration_keys[@]}): "
+
+    if [[ "${choice:-}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_configuration_keys[@]})); then
+      release_configuration_key="${release_configuration_keys[${choice}]}"
+
+      clear_lines "$((${#release_configuration_keys[@]} + 2))"
+      log_success "${release_configuration_key}"
+
+      break
+    else
+      clear_lines 1
+    fi
+  done
+fi
 
 typeset -a release_configuration_parts=("${(s:|:)RELEASE_CONFIGURATIONS[$release_configuration_key]}")
 typeset build_configuration="${release_configuration_parts[1]}"
@@ -208,26 +222,51 @@ fi
 log_stage "Select release type"
 
 typeset -a release_type_options=("Major" "Minor" "Patch" "Keep current version")
-typeset release_type
+typeset release_type="${RELEASE_TYPE:-}"
 
-for ((i = 1; i <= ${#release_type_options[@]}; i++)); do
-  print "${OUTPUT_PADDING}${i}) ${release_type_options[$i]}"
-done
+if [[ -n "${release_type}" ]]; then
+  typeset found_release_type=0
 
-print
+  for release_type_option in "${release_type_options[@]}"; do
+    if [[ "${release_type:l}" == "${release_type_option:l}" ]]; then
+      release_type="${release_type_option}"
+      found_release_type=1
 
-while true; do
-  read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
+      break
+    fi
+  done
 
-  if [[ "${choice}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_type_options[@]})); then
-    release_type="${release_type_options[${choice}]}"
-    clear_lines "$((${#release_type_options[@]} + 2))"
-    log_success "${release_type}"
-    break
-  else
-    clear_lines 1
+  if ((!found_release_type)); then
+    log_failure_and_exit "Invalid release type: ${release_type}"
   fi
-done
+
+  log_success "${release_type}"
+else
+  if [[ ! -t 0 ]]; then
+    log_failure_and_exit "Missing environment variable: RELEASE_TYPE"
+  fi
+
+  for ((i = 1; i <= ${#release_type_options[@]}; i++)); do
+    print "${OUTPUT_PADDING}${i}) ${release_type_options[$i]}"
+  done
+
+  print
+
+  while true; do
+    read -r "choice?${OUTPUT_PADDING}Enter choice (1-${#release_type_options[@]}): "
+
+    if [[ "${choice:-}" =~ ^[1-9][0-9]*$ ]] && ((choice >= 1 && choice <= ${#release_type_options[@]})); then
+      release_type="${release_type_options[${choice}]}"
+
+      clear_lines "$((${#release_type_options[@]} + 2))"
+      log_success "${release_type}"
+
+      break
+    else
+      clear_lines 1
+    fi
+  done
+fi
 
 # -----------------------------------------------------------------------------
 
@@ -276,29 +315,45 @@ fi
 
 # -----------------------------------------------------------------------------
 
-log_stage "Retrieving secrets from 1Password"
+typeset apple_id="${APPLE_ID:-}"
+typeset notarytool_password="${NOTARYTOOL_PASSWORD:-}"
+typeset sentry_auth_token="${SENTRY_AUTH_TOKEN:-}"
 
-typeset -A secrets
-typeset -a missing_secrets=()
-typeset secret_value
+if [[ -n "${apple_id}" && -n "${notarytool_password}" && -n "${sentry_auth_token}" ]]; then
+  log_stage "Using secrets from environment variables"
 
-for secret_ref in "${REQUIRED_SECRETS[@]}"; do
-  if ! secret_value=$(op read --no-newline "${secret_ref}" 2>/dev/null); then
-    log_error "${secret_ref}"
-    missing_secrets+=("${secret_ref}")
-  else
-    log_success "${secret_ref}"
-    secrets[$secret_ref]=${secret_value}
+  log_success "APPLE_ID"
+  log_success "NOTARYTOOL_PASSWORD"
+  log_success "SENTRY_AUTH_TOKEN"
+else
+  log_stage "Retrieving secrets from 1Password"
+
+  if ! command -v op &>/dev/null; then
+    log_failure_and_exit "1Password CLI not available."
   fi
-done
 
-if [[ ${#missing_secrets[@]} -gt 0 ]]; then
-  log_failure_and_exit "One or more required secrets could not be retrieved."
+  typeset -A secrets
+  typeset -a missing_secrets=()
+  typeset secret_value
+
+  for secret_ref in "${REQUIRED_SECRETS[@]}"; do
+    if ! secret_value=$(op read --no-newline "${secret_ref}" 2>/dev/null); then
+      log_error "${secret_ref}"
+      missing_secrets+=("${secret_ref}")
+    else
+      log_success "${secret_ref}"
+      secrets[$secret_ref]=${secret_value}
+    fi
+  done
+
+  if [[ ${#missing_secrets[@]} -gt 0 ]]; then
+    log_failure_and_exit "One or more required secrets could not be retrieved."
+  fi
+
+  apple_id=${secrets[${OP_APPLE_ID_REF}]}
+  notarytool_password=${secrets[${OP_NOTARYTOOL_PASSWORD_REF}]}
+  sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
 fi
-
-readonly apple_id=${secrets[${OP_APPLE_ID_REF}]}
-readonly notarytool_password=${secrets[${OP_NOTARYTOOL_PASSWORD_REF}]}
-readonly sentry_auth_token=${secrets[${OP_SENTRY_AUTH_TOKEN_REF}]}
 
 # -----------------------------------------------------------------------------
 
