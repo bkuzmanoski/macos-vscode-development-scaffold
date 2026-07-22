@@ -1,7 +1,6 @@
 {
   "lineBreakBeforeEachArgument": true,
   "lineBreakBeforeEachGenericRequirement": true,
-  "lineBreakBetweenDeclarationAttributes": true,
   "lineLength": 120,
   "multiElementCollectionTrailingCommas": false,
   "orderedImports": {
