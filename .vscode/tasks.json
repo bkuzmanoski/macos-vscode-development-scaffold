@@ -7,17 +7,8 @@
       "command": "${workspaceFolder}/Scripts/build.sh",
       "problemMatcher": [
         {
-          "fileLocation": ["relative", "${workspaceRoot}"],
-          "applyTo": "allDocuments",
-          "pattern": { "regexp": "", "line": 1 },
-          "background": {
-            "activeOnStart": true,
-            "beginsPattern": "^Resolving Package Graph$",
-            "endsPattern": "^Build Succeeded$"
-          }
-        },
-        {
-          "owner": "swift",
+          "owner": "xcodebuild",
+          "source": "xcodebuild",
           "fileLocation": ["absolute"],
           "pattern": {
             "regexp": "^(?:❌|\\[x\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
@@ -29,7 +20,8 @@
           "severity": "error"
         },
         {
-          "owner": "swift",
+          "owner": "xcodebuild",
+          "source": "xcodebuild",
           "fileLocation": ["absolute"],
           "pattern": {
             "regexp": "^(?:⚠️|\\[!\\])\\s*(\\/[^:]+):(\\d+):(\\d+):\\s*(.*)$",
@@ -51,9 +43,30 @@
       }
     },
     {
+      "label": "Lint",
+      "type": "shell",
+      "command": "git ls-files -z --cached --others --exclude-standard '*.swift' | xargs -0 swift format lint --parallel",
+      "group": { "kind": "build" },
+      "presentation": { "reveal": "silent", "clear": true },
+      "problemMatcher": {
+        "owner": "swift-format",
+        "source": "swift-format",
+        "fileLocation": "autoDetect",
+        "pattern": {
+          "regexp": "^(.+?):(\\d+):(\\d+): (warning|error): (?:\\[(\\w+)\\] )?(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      }
+    },
+    {
       "label": "Stream Log",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleIdentifier}\"",
+      "command": "${workspaceFolder}/Scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleIdentifier}\"",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -65,7 +78,7 @@
     {
       "label": "Monitor Resource Usage",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/monitor.sh \"${config:appName}\"",
+      "command": "${workspaceFolder}/Scripts/monitor.sh \"${config:appName}\"",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
