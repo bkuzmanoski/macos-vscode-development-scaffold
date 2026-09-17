@@ -359,7 +359,13 @@ fi
 
 if [[ "${release_type}" != "Keep current version" ]]; then
   log_stage "Setting app version"
-  "${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}" &>/dev/null
+
+  typeset bump_version_output
+
+  if ! bump_version_output=$("${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}" 2>&1); then
+    log_error "${release_type} version bump"
+    log_failure_and_exit "${bump_version_output}"
+  fi
 fi
 
 # -----------------------------------------------------------------------------

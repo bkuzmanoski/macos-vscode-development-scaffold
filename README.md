@@ -11,7 +11,7 @@ This repository contains my VSCode scaffold for developing macOS applications. I
 
 ## Required Tools
 
-- Xcode (`xcodebuild`, `xcrun`, etc.)
+- Xcode 27.2 or later (`xcodebuild`, `xcrun`, etc.)
 - [xcode-build-server](https://github.com/SolaWing/xcode-build-server)
 - [xcbeautify](https://github.com/cpisciotta/xcbeautify)
 - [op](https://developer.1password.com/docs/cli/) (used in `/Scripts/release.sh`)
@@ -29,4 +29,5 @@ This repository contains my VSCode scaffold for developing macOS applications. I
 
 - `grep` for "TODO" to find places that need be filled in.
 - Create your Xcode project in a subdirectory named `${appName}` and set up your Team, etc.
+- Make sure the project uses the JSON project format (`project.xcproj`)
 - Never launch Xcode again :).

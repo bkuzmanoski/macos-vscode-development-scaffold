@@ -7,7 +7,11 @@ fi
 
 readonly VERSION_BUMP_TYPE="$1"
 readonly XCODE_PROJECT_PATH="$2"
-readonly XCODE_PROJECT_SETTINGS_PATH="${XCODE_PROJECT_PATH}/project.pbxproj"
+readonly XCODE_PROJECT_SETTINGS_PATH="${XCODE_PROJECT_PATH}/project.xcproj"
+
+readonly MARKETING_VERSION_KEY_PATTERN='"MARKETING_VERSION(\[[^]]*\])?"[[:space:]]*:[[:space:]]*'
+readonly CURRENT_PROJECT_VERSION_KEY_PATTERN='"CURRENT_PROJECT_VERSION(\[[^]]*\])?"[[:space:]]*:[[:space:]]*'
+readonly VALUE_PATTERN='"([^"]*)"'
 
 if [[ ! -f "${XCODE_PROJECT_SETTINGS_PATH}" ]]; then
   print -u2 "Error: Could not find Xcode project settings: ${XCODE_PROJECT_SETTINGS_PATH}"
@@ -19,10 +23,10 @@ typeset current_marketing_version
 typeset current_project_version
 
 for line in "${project_settings_lines[@]}"; do
-  if [[ "${line}" =~ MARKETING_VERSION\ =\ \([^\;]+\)\; ]]; then
-    current_marketing_version=${match[1]:=}
-  elif [[ "${line}" =~ CURRENT_PROJECT_VERSION\ =\ \([^\;]+\)\; ]]; then
-    current_project_version=${match[1]:=}
+  if [[ -z "${current_marketing_version}" && "${line}" =~ ${MARKETING_VERSION_KEY_PATTERN}${VALUE_PATTERN} ]]; then
+    current_marketing_version=${match[2]:=}
+  elif [[ -z "${current_project_version}" && "${line}" =~ ${CURRENT_PROJECT_VERSION_KEY_PATTERN}${VALUE_PATTERN} ]]; then
+    current_project_version=${match[2]:=}
   fi
 
   if [[ -n "${current_marketing_version}" && -n "${current_project_version}" ]]; then
@@ -60,8 +64,8 @@ esac
 typeset new_marketing_version="${(j:.:)marketing_version_parts}"
 typeset new_project_version=$((current_project_version + 1))
 
-sed -i '' -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${new_marketing_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
-sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]+;/CURRENT_PROJECT_VERSION = ${new_project_version};/g" "${XCODE_PROJECT_SETTINGS_PATH}"
+sed -i '' -E "s/(${MARKETING_VERSION_KEY_PATTERN})${VALUE_PATTERN}/\\1\"${new_marketing_version}\"/g" "${XCODE_PROJECT_SETTINGS_PATH}"
+sed -i '' -E "s/(${CURRENT_PROJECT_VERSION_KEY_PATTERN})${VALUE_PATTERN}/\\1\"${new_project_version}\"/g" "${XCODE_PROJECT_SETTINGS_PATH}"
 
 print "Marketing Version:              ${current_marketing_version}\t→ ${new_marketing_version}"
 print "Project Version (Build Number): ${current_project_version}\t→ ${new_project_version}"
