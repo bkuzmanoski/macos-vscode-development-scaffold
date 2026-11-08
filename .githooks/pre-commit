@@ -1,0 +1,23 @@
+#!/bin/zsh
+
+# Enable with: git config core.hooksPath .githooks
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+typeset -i failed=0
+typeset -a staged_swift_files=(${(0)"$(git diff --cached --name-only --diff-filter=ACMR -z -- '*.swift')"})
+
+if ((${#staged_swift_files[@]} > 0)); then
+  # --strict turns lint warnings into errors so they fail the commit
+  if ! swift format lint --strict --parallel -- "${staged_swift_files[@]}"; then
+    failed=1
+  fi
+fi
+
+if ! git diff --cached --quiet --diff-filter=ACMR -- '*.xcproj'; then
+  if ! Scripts/format_project.sh --check; then
+    failed=1
+  fi
+fi
+
+exit ${failed}

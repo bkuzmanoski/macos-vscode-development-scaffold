@@ -64,6 +64,21 @@
       }
     },
     {
+      "label": "Lint Project",
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/format_project.sh --check",
+      "group": { "kind": "build" },
+      "problemMatcher": [],
+      "presentation": { "echo": false, "showReuseMessage": false, "clear": true }
+    },
+    {
+      "label": "Format Project",
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/format_project.sh",
+      "problemMatcher": [],
+      "presentation": { "echo": false, "showReuseMessage": false, "clear": true }
+    },
+    {
       "label": "Stream Log",
       "type": "shell",
       "command": "${workspaceFolder}/Scripts/stream_log.sh \"${workspaceFolder}/DerivedData/Build/Products/Debug/${config:appName}.app/Contents/MacOS/${config:appName}\" \"${config:bundleIdentifier}\"",

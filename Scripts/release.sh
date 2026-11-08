@@ -30,7 +30,8 @@ readonly OP_SENTRY_AUTH_TOKEN_REF="op://path/to/secret"   # TODO: Update
 readonly DEVELOPMENT_TEAM=""                                     # TODO: Update
 readonly SIGNING_IDENTITY=""                                     # TODO: Update
 readonly XCODE_PROJECT_PATH="${PROJECT_DIR}/<AppName>.xcodeproj" # TODO: Update
-readonly BUILD_SCHEME=""                                         # TODO: Update
+readonly VERSION_XCCONFIG_PATH="${PROJECT_DIR}/Config/Version.xcconfig"
+readonly BUILD_SCHEME="" # TODO: Update
 readonly -A RELEASE_CONFIGURATIONS=( # TODO: Update
   # [plugin]=build_configuration[|release_repository_dir|release_repository_name]
 )
@@ -59,7 +60,7 @@ readonly DMG_APP_DROP_LINK_POS_Y=274                           # TODO: Update
 # Dependencies
 readonly -a REQUIRED_COMMANDS=("${BUMP_VERSION_SCRIPT_PATH}" "xcodebuild" "jq" "xcrun" "create-dmg" "sentry-cli" "gh")
 readonly -a REQUIRED_XCODE_TOOLS=("notarytool" "stapler")
-readonly -a REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${DMG_BACKGROUND_PATH}")
+readonly -a REQUIRED_PATHS=("${XCODE_PROJECT_PATH}" "${VERSION_XCCONFIG_PATH}" "${DMG_BACKGROUND_PATH}")
 readonly -a REQUIRED_SECRETS=("${OP_APPLE_ID_REF}" "${OP_NOTARYTOOL_PASSWORD_REF}" "${OP_SENTRY_AUTH_TOKEN_REF}")
 readonly -a REQUIRED_BUILD_SETTINGS=("PRODUCT_NAME" "MACOSX_DEPLOYMENT_TARGET" "MARKETING_VERSION" "CURRENT_PROJECT_VERSION")
 
@@ -236,7 +237,7 @@ if [[ -n "${release_type}" ]]; then
     fi
   done
 
-  if ((!found_release_type)); then
+  if ((! found_release_type)); then
     log_failure_and_exit "Invalid release type: ${release_type}"
   fi
 
@@ -360,9 +361,13 @@ fi
 if [[ "${release_type}" != "Keep current version" ]]; then
   log_stage "Setting app version"
 
+  if grep -qE '"(MARKETING_VERSION|CURRENT_PROJECT_VERSION)(\[[^]]*\])?"[[:space:]]*:' "${XCODE_PROJECT_PATH}/project.xcproj"; then
+    log_failure_and_exit "MARKETING_VERSION or CURRENT_PROJECT_VERSION is set in the project file and overrides ${VERSION_XCCONFIG_PATH:t}.\nRemove it from the project and target build settings."
+  fi
+
   typeset bump_version_output
 
-  if ! bump_version_output=$("${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${XCODE_PROJECT_PATH}" 2>&1); then
+  if ! bump_version_output=$("${BUMP_VERSION_SCRIPT_PATH}" "--${release_type:l}" "${VERSION_XCCONFIG_PATH}" 2>&1); then
     log_error "${release_type} version bump"
     log_failure_and_exit "${bump_version_output}"
   fi
@@ -373,7 +378,7 @@ fi
 log_stage "Reading build settings from Xcode"
 
 typeset -A build_settings=(
-  "${(f)"$(
+  ${(f)"$(
     xcodebuild \
       -project "${XCODE_PROJECT_PATH}" \
       -scheme "${BUILD_SCHEME}" \
@@ -382,16 +387,16 @@ typeset -A build_settings=(
       -json \
       2>/dev/null \
       | jq \
-        '.[0].buildSettings as $settings | $ARGS.positional[] | ., $settings[.]' \
+        '.[0].buildSettings as $settings | $ARGS.positional[] | select(($settings[.] // "") != "") | ., $settings[.]' \
         --args "${REQUIRED_BUILD_SETTINGS[@]}" \
         --raw-output \
         2>/dev/null
-  )"}"
+  )"}
 )
 typeset -a missing_settings=()
 
 for setting in "${REQUIRED_BUILD_SETTINGS[@]}"; do
-  if [[ -z "${build_settings[$setting]}" ]]; then
+  if [[ -z "${build_settings[$setting]:-}" ]]; then
     log_error "${setting}"
     missing_settings+=("${setting}")
   else
